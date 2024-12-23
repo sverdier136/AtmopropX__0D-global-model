@@ -16,6 +16,7 @@ def h_R(n_g, R):
     return 0.8 / np.sqrt(4 + (R / lambda_i))
 
 def maxwellian_flux_speed(T, m):
+    # TODO : what is it, where does it come from, does it always hold true
     return np.sqrt((8 * k * T) / (pi * m))
 
 def pressure(T, Q, v, A_out):

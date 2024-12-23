@@ -14,6 +14,7 @@ config_dict = {
         'kappa': 0.0057,
 
         # Ions
+        # TODO : are these still valid for N, do we need multiple values ?
         'beta_i': 0.7,
         'V_grid': 1000,  # potential difference
 

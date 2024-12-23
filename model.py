@@ -35,6 +35,7 @@ class GlobalModel:
         self.E_ex = 11.6 * e
 
     # vvvv This is the rate constant model described in the paper, to use just uncomment this and comment the interpolation functions
+    # TODO : what's the difference ?
     # def K_el(self, T): 
     #     return 3e-13 * T / T
 
