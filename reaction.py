@@ -12,7 +12,7 @@ class Reaction:
                 reactives : list with all reactives names
                 products : list with all products names
                 rate_constant : function taking as arguments (T_g, T_e, )
-                stoechio_coeffs : stoechiometric coefficients positive if product, negative otherwise"""
+                stoechio_coeffs : stoechiometric coefficients always positive"""
         self.species = species
 
         self.reactives = [self.species.get_specie_by_name(name) for name in reactives]
