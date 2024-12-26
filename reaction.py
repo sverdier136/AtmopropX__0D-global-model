@@ -35,15 +35,17 @@ class Reaction:
         self.rate_constant = rate_constant     # func
         #self.
 
-    def change_rate(self, T_g, T_e, densities):
+    def density_change_rate(self, T_g, T_e, densities):
         """Returns an np.array with the change rate for each species due to this reaction"""
         K = self.rate_constant(T_g, T_e)
         product = K * np.prod(densities[self.reactives_indices+self.products_indices]) # product of rate constant and densities of all the stuff
         rate = np.zeros(self.species.nb)
         for sp in self.reactives:
-            rate[self.species.get_index_by_instance(sp)] = - product
+            i = self.species.get_index_by_instance(sp)
+            rate[i] = - product * self.stoechio_coeffs[i]
         for sp in self.products:
-            rate[self.species.get_index_by_instance(sp)] = + product
+            i = self.species.get_index_by_instance(sp)
+            rate[i] = + product * self.stoechio_coeffs[i]
         
         return rate
 
