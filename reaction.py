@@ -7,6 +7,7 @@ class Reaction:
     def __init__(self, species, reactives, products, rate_constant, energy_treshold, stoechio_coeffs=None):
         """
         Reaction class
+        /!\ Electrons should be added to reactives and products only if they are not spectators (otherwise pbs with density_rate_change)
             Inputs : 
                 species : instance of class Species, lists all species present 
                 reactives : list with all reactives names
