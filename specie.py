@@ -14,6 +14,7 @@ class Specie:
 class Species:
 
     def __init__(self, species_list):
+        """Contains all species present in the problem. Should contain the electrons."""
         self.species = species_list
         self.names = [sp.name for sp in self.species]
 
@@ -22,6 +23,7 @@ class Species:
 
     @property
     def nb(self):
+        """Number of species considered (electrons included)"""
         return len(self.species)
 
     def add(self, specie):
