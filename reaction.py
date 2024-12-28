@@ -15,7 +15,7 @@ class Reaction:
                 stoechio_coeffs : stoechiometric coefficients always positive
     """
 
-    def __init__(self, species, reactives, products, rate_constant, energy_treshold, stoechio_coeffs=None):
+    def __init__(self, species: Species, reactives: list[str], products: list[str], rate_constant, energy_treshold: float, stoechio_coeffs: list[float]=None, spectators: list[str]=None):
         """
         Reaction class
         /!\ Electrons should be added to reactives and products only if they are not spectators (otherwise pbs with density_rate_change)
@@ -48,6 +48,7 @@ class Reaction:
 
         self.energy_threshold = energy_treshold
         self.rate_constant = rate_constant     # func
+        self.spectators = spectators
         
 
     def density_change_rate(self, state: NDArray[float]): # type: ignore
@@ -80,15 +81,36 @@ class Reaction:
         #     rate[self.species.get_index_by_instance(sp)] = + product
         
         # return rate
+    
+    def __str__(self):
+        """Returns string describing the reaction"""
+        def format_species(species, species_indices):
+            terms = []
+            for idx, sp in zip(species_indices, species):
+                coeff = self.stoechio_coeffs[idx]
+                # Format coefficient: display as integer if it is a whole number, else as float with 2 decimals
+                if coeff.is_integer():
+                    coeff_str = f"{int(coeff)}" if coeff != 1 else ""
+                else:
+                    coeff_str = f"{coeff:.2f}" 
+                term = f"{coeff_str} {sp.name}".strip()
+                terms.append(term)
+            return " + ".join(terms)
+
+        reactives_str = format_species(self.reactives, self.reactives_indices)
+        products_str = format_species(self.products, self.products_indices)
+        return f"{reactives_str} -> {products_str}          K_r = {self.rate_constant.__name__}"
+
 
 
 if __name__ == "__main__":
-    def K(Ts):
+    def K_diss_I2(Ts):
         print("Temperatures : ",Ts)
         return 2
     
     species_list = Species([Specie("I0", 10.57e-27, 0), Specie("I1", 10.57e-27, 0), Specie("I2", 10.57e-27, 0), Specie("I3", 10.57e-27, 0), Specie("I4", 10.57e-27, 0), Specie("I5", 10.57e-27, 0)])
 
-    reac = Reaction(species_list, ["I2", "I4"], ["I5"], K, 10)
+    reac = Reaction(species_list, ["I2", "I4"], ["I5"], K_diss_I2, 10)
     state = np.array([1,2,3,4,5,6, -181,-182]) # jusqu'à 6 = densité, apres T°
     print(reac.density_change_rate(state))
+    print(reac)
