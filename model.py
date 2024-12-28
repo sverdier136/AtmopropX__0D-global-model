@@ -1,8 +1,6 @@
 import numpy as np 
 from numpy.typing import NDArray
-import matplotlib.pyplot as plt
-from scipy.constants import m_e, e, pi, k, epsilon_0 as eps_0, mu_0 
-# k is k_B -> Boltzmann constant
+from scipy.constants import m_e, e, pi, k, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
 from scipy.integrate import trapezoid, solve_ivp, odeint
 from scipy.interpolate import interp1d
 
@@ -210,8 +208,6 @@ class GlobalModel:
 
         dy[:self.species.nb] = self.particle_balance(state)
         dy[self.species.nb :] = self.energy_balance(state)
-
-        return dy
 
         return dy
     
