@@ -1,11 +1,10 @@
 import numpy as np 
 from numpy.typing import NDArray
-import matplotlib.pyplot as plt
-from scipy.constants import m_e, e, pi, k, epsilon_0 as eps_0, mu_0 
-# k is k_B -> Boltzmann constant
+from scipy.constants import m_e, e, pi, k, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
 from scipy.integrate import trapezoid, solve_ivp, odeint
 from scipy.interpolate import interp1d
 
+#Local modules
 from util import load_csv, load_cross_section
 from auxiliary_funcs import pressure, maxwellian_flux_speed, u_B, A_eff, A_eff_1, SIGMA_I, R_ind, h_L
 from specie import Specie, Species
@@ -132,10 +131,11 @@ class GlobalModel:
         """Ion current density extracted by the grids"""
         return self.flux_i(T_e, T_g, n_e, n_g) * e
 
-    def eval_property(self, func, y):
-        """Calculates any property using T_e, T_g, n_e, n_g and this for an array of values"""
-        prop = np.zeros(y.shape[0])
-        for i in np.arange(y.shape[0]):
+    def eval_property(self, func, sol):
+        """Calculates a property based on 'state' for all 't'.
+            sol must be a np.array with shape (nb_of_t's, dimension_of_state) where each line represents a state"""
+        prop = np.zeros(sol.shape[0])   #number of instants
+        for i in np.arange(sol.shape[0]):
             T_e = y[i][0]
             T_g = y[i][1]
             n_e = y[i][2]
@@ -199,8 +199,10 @@ class GlobalModel:
         return dE    
 
 
-    def P_rf(self, T_e, T_g, n_e, n_g):
+    def P_rf(self, state: NDArray[float]): # type: ignore
         """Calculates the power delivered by the coil using RF"""
+        # ! To adapt to new var state
+        T_e, T_g, n_e, n_g = state
         R_ind_val = R_ind(self.R, self.L, self.N, self.omega, n_e, n_g, self.K_el(T_e))
         return (1/2) * (R_ind_val + self.R_coil) * self.I_coil**2
 
@@ -213,8 +215,7 @@ class GlobalModel:
         dy[self.species.nb :] = self.energy_balance(state)
 
         return dy
-
-        return dy
+    
 
     def solve(self, t0, tf):
         y0 = np.array([self.T_e_0, self.T_g_0, self.n_e_0, self.n_g_0])
@@ -224,22 +225,19 @@ class GlobalModel:
     def solve_for_I_coil(self, I_coil):
         """Calculates for a list of intensity in the coil the resulting power consumption and the resulting thrust.
             ## Returns
-            power_list, list_of(`[T_e, T_g, n_e, n_g] after long time`)"""
+            power_array , list_of(`state` after long time)"""
         p = np.zeros(I_coil.shape[0])
-        solution = np.zeros((I_coil.shape[0], 4))
+        solution = np.zeros((I_coil.shape[0], 4))  #shape = (y,x)
 
         for i, I in enumerate(I_coil):
             self.I_coil = I
 
-            sol = self.solve(0, 5e-2)
+            sol = self.solve(0, 5e-2)    # TODO Needs some testing
 
-            T_e = sol.y[0][-1]
-            T_g = sol.y[1][-1]
-            n_e = sol.y[2][-1]
-            n_g = sol.y[3][-1]
+            final_state = sol.y[:, -1]
 
-            p[i] = self.P_rf(T_e, T_g, n_e, n_g)
+            p[i] = self.P_rf(final_state)
 
-            solution[i] = np.array([T_e, T_g, n_e, n_g])
-
+            solution[i] = final_state
+            
         return p, solution
