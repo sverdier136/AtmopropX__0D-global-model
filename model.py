@@ -136,12 +136,7 @@ class GlobalModel:
             sol must be a np.array with shape (nb_of_t's, dimension_of_state) where each line represents a state"""
         prop = np.zeros(sol.shape[0])   #number of instants
         for i in np.arange(sol.shape[0]):
-            T_e = y[i][0]
-            T_g = y[i][1]
-            n_e = y[i][2]
-            n_g = y[i][3]
-            prop[i] = func(T_e, T_g, n_e, n_g)
-
+            prop[i] = func(sol[i])
         return prop
 
     def P_loss(self, T_e, T_g, n_e, n_g):
