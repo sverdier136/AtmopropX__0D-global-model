@@ -65,21 +65,14 @@ class Reaction:
         
         return rate
 
-
     def energy_change_rate(self, state: NDArray[float]): # type: ignore
-        """Function meant to return the change in energy due to this specific equation.
-            HOWEVER : seems like it is necessary to account for difference in temperature of atoms molecules and electrons...
-            Thus 1 function per "Temperatur type" will be needed"""
-        pass
-        # K = self.rate_constant(T_g, T_e)
-        # product = K * np.prod(densities[self.reactives_indices+self.products_indices]) # product of rate constant and densities of all the stuff
-        # rate = np.zeros(self.species.nb)
-        # for sp in self.reactives:
-        #     rate[self.species.get_index_by_instance(sp)] = - product
-        # for sp in self.products:
-        #     rate[self.species.get_index_by_instance(sp)] = + product
-        
-        # return rate
+        K = self.rate_constant(T_g, T_e)
+        product = K * np.prod(densities[self.reactives_indices+self.products_indices]) # product of rate constant and densities of all the stuff
+        energ = self.energy_threshold * product
+        return energ  
+        # returns the contribution of this reaction to P_loss ; works for dissociation, ionization, and excitation ; does NOT include elastic collisions and wall losses
+
+    
 
 
 if __name__ == "__main__":
