@@ -140,25 +140,104 @@ class GlobalModel:
         return prop
 
     def P_loss(self, T_e, T_g, n_e, n_g):
+        # Old code :
+        # a = self.E_iz * n_e * n_g * self.K_iz(T_e)
+        # b = self.E_ex * n_e * n_g * self.K_ex(T_e)
+        # c = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
+        # d = 7 * k * T_e * n_e * u_B(T_e, self.m_i) * A_eff(n_g, self.R, self.L) / self.V
+        
+        # return a + b + c + d
+        """
+        Calcule les pertes d'énergie des électrons :
+        - Ionisation
+        - Excitation
+        - Collisions élastiques
+        - Pertes aux parois
+        - Dissociation et excitation vibrationnelle (plasma d'air)
+        """
+        # Ionisation et excitation
         a = self.E_iz * n_e * n_g * self.K_iz(T_e)
         b = self.E_ex * n_e * n_g * self.K_ex(T_e)
-        c = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
-        d = 7 * k * T_e * n_e * u_B(T_e, self.m_i) * A_eff(n_g, self.R, self.L) / self.V
         
-        return a + b + c + d
+        # Collisions élastiques (énergie transférée au gaz)
+        c = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
+
+        # Pertes aux parois
+        d = 7 * k * T_e * n_e * u_B(T_e, self.m_i) * A_eff(n_g, self.R, self.L) / self.V
+
+        # Dissociation et excitation vibrationnelle 
+        K_diss = self.K_diss(T_e)  # Taux de dissociation
+
+        e = self.E_diss * n_e * n_g * K_diss
+        f = E_vibr * n_e * n_g * K_vibr
+
+        return a + b + c + d + e + f
+
+
+    
 
     def P_abs(self, T_e, n_e, n_g):
-        return R_ind(self.R, self.L, self.N, self.omega, n_e, n_g, self.K_el(T_e)) * self.I_coil**2 / (2 * self.V)
+        return R_ind(self.R, self.L, self.N, self.omega, n_e, n_g, self.K_el(T_e)) * self.I_coil**2 / 2 # the original code divided by V : density of power ?
+    
+    def electron_heating(self, T_e, n_e, n_g):
+        # returns the derivative of electron energy : d/dt (3/2 n_e e T_e)
+        power_balance = P_abs(self, T_e, n_e, n_g) - P_loss(self, T_e, T_g, n_e, n_g)
+        return power_balance
 
-    def gas_heating(self, T_e, T_g, n_e, n_g):
-        """Calculates the derivative of the gas energy : 3/2*n_g*k_b*T_g"""
-        K_in = SIGMA_I * maxwellian_flux_speed(T_g, self.m_i)
-        lambda_0 = self.R / 2.405 + self.L / pi
-        # lambda_0 =np.sqrt((self.R / 2.405)**2 + (self.L / pi)**2)
-        a = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
-        b = (1/4) * self.m_i * (u_B(T_e, self.m_i)**2) * n_e * n_g * K_in 
-        c = self.kappa * (T_g - self.T_g_0) * self.A / (self.V * lambda_0)
-        return a + b - c
+
+def gas_heating(self, T_e, T_g, n_e, n_g):
+    """
+    Calcule la dérivée de l'énergie du gaz : (3/2) * n_g * k_B * T_g
+    pour un plasma d'air atmosphérique.
+    """
+
+    # Taux de réaction
+    K_diss = self.K_diss(T_e)  # Taux de dissociation
+    K_vibr = self.K_vibr(T_e)  # Taux d'excitation vibrationnelle
+    K_rot = self.K_rot(T_e)  # Taux d'excitation rotationnelle
+
+    # Collisions élastiques : transfert d'énergie des électrons vers le gaz
+    a = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
+
+    # Transfert d'énergie des ions au gaz neutre via collisions
+    b = (1/4) * self.m_i * (u_B(T_e, self.m_i)**2) * n_e * n_g * SIGMA_I * maxwellian_flux_speed(T_g, self.m_i)
+
+    # Dissociation des molécules 
+    c = E_diss * n_e * n_g * K_diss
+
+    # Excitation vibrationnelle 
+    d = E_vibr * n_e * n_g * K_vibr
+
+    # Excitation rotationnelle 
+    e = E_rot * n_e * n_g * K_rot
+
+    # Transfert de chaleur aux parois : calcul de lamda0 ? 
+    lambda_0 = self.R / 2.405 + self.L / pi  # Longueur de diffusion thermique
+    f = self.kappa * (T_g - self.T_g_0) * self.A / (self.V * lambda_0)
+
+    # Somme des contributions
+    return a + b + c + d + e - f
+
+    # Ancient code :
+    # def gas_heating(self, T_e, T_g, n_e, n_g):
+    #    """Calculates the derivative of the gas energy : 3/2*n_g*k_b*T_g"""
+    #    K_in = SIGMA_I * maxwellian_flux_speed(T_g, self.m_i)
+    #    lambda_0 = self.R / 2.405 + self.L / pi
+    #    # lambda_0 =np.sqrt((self.R / 2.405)**2 + (self.L / pi)**2)
+    #    a = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
+    #    b = (1/4) * self.m_i * (u_B(T_e, self.m_i)**2) * n_e * n_g * K_in 
+    #    c = self.kappa * (T_g - self.T_g_0) * self.A / (self.V * lambda_0)
+    #    return a + b - c
+
+#     def gas_heating(self, T_e, T_g, n_e, n_g):
+#         """Calculates the derivative of the gas energy : 3/2*n_g*k_b*T_g"""
+#         K_in = SIGMA_I * maxwellian_flux_speed(T_g, self.m_i)
+#         lambda_0 = self.R / 2.405 + self.L / pi
+#         # lambda_0 =np.sqrt((self.R / 2.405)**2 + (self.L / pi)**2)
+#         a = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
+#         b = (1/4) * self.m_i * (u_B(T_e, self.m_i)**2) * n_e * n_g * K_in 
+#         c = self.kappa * (T_g - self.T_g_0) * self.A / (self.V * lambda_0)
+#         return a + b - c
 # * A supprimer (gardé pour référence)
     # def particle_balance_e(self, T_e, T_g, n_e, n_g):
     #     """Calculates the derivative of the electron density : n_e"""
