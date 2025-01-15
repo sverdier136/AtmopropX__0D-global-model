@@ -23,54 +23,6 @@ class GlobalModel:
         self.species = species
         self.reaction_set = reaction_set
 
-# * A supprimer (gardé pour référence)
-    # def load_chemistry(self):
-    #     """Initialize the reaction rate constants and the threshold values"""
-
-    #     # first variable is energy, second is cross-section for a type of reaction
-    #     e_el, cs_el  = load_cross_section('cross-sections/Xe/Elastic_Xe.csv')
-    #     e_ex, cs_ex  = load_cross_section('cross-sections/Xe/Excitation1_Xe.csv')
-    #     e_iz, cs_iz  = load_cross_section('cross-sections/Xe/Ionization_Xe.csv')
-
-    #     T = np.linspace(0.1 * e / k, 100 * e / k, 5000)  # Probably electron temperature : gaz T° is neglected in all likelyhood
-    #     k_el_array = self.rate_constant(T, e_el, cs_el, m_e)
-    #     k_ex_array = self.rate_constant(T, e_ex, cs_ex, m_e)
-    #     k_iz_array = self.rate_constant(T, e_iz, cs_iz, m_e)
-
-    #     self.K_el = interp1d(T, k_el_array, fill_value=(k_el_array[0], k_el_array[-1]), bounds_error=True)
-    #     self.K_ex = interp1d(T, k_ex_array, fill_value=(k_ex_array[0], k_ex_array[-1]), bounds_error=True)
-    #     self.K_iz = interp1d(T, k_iz_array, fill_value=(k_iz_array[0], k_iz_array[-1]), bounds_error=True)
-        
-    #     self.E_iz = 12.127 * e    # In Volt in Chabert paper, here in Joule
-    #     self.E_ex = 11.6 * e
-
-    # vvvv This is the rate constant model described in the paper, to use just uncomment this and comment the interpolation functions
-    # def K_el(self, T): 
-    #     return 3e-13 * T / T
-
-    # def K_ex(self, T):
-    #     T_eV = k * T / e
-    #     return 1.93e-19 * T_eV**(-0.5) * np.exp(- self.E_ex / (e * T_eV)) * np.sqrt(8 * e * T_eV / (pi * m_e))
-    
-    # def K_iz(self, T):
-    #     T_eV = k * T / e
-    #     K_iz_1 = 1e-20 * ((3.97 + 0.643 * T_eV - 0.0368 * T_eV**2) * np.exp(- self.E_iz / (e * T_eV))) * np.sqrt(8 * e * T_eV / (pi * m_e))        
-    #     K_iz_2 = 1e-20 * (- 1.031e-4 * T_eV**2 + 6.386 * np.exp(- self.E_iz / (e * T_eV))) * np.sqrt(8 * e * T_eV / (pi * m_e))
-    #     return 0.5 * (K_iz_1 + K_iz_2)
-    # ^^^^
-
-    # def rate_constant(self, T_k, E, cs, m):
-    #     """Calculates a reaction rate constant """
-    #     T = T_k * k / e
-    #     n_temperature = T.shape[0]
-    #     v = np.sqrt(2 * E * e / m)  # electrons average speed
-    #     k_rate = np.zeros(n_temperature)
-    #     for i in np.arange(n_temperature):
-    #         a = (m / (2 * pi * e * T[i]))**(3/2) * 4 * pi
-    #         f = cs * v**3 * np.exp(- m * v**2 / (2 * e * T[i])) 
-    #         k_rate[i] = trapezoid(a*f, x=v)
-    #     return k_rate
-
     def load_config(self, config_dict: dict[str, float]):
 
         # Geometry
@@ -218,40 +170,6 @@ def gas_heating(self, T_e, T_g, n_e, n_g):
     # Somme des contributions
     return a + b + c + d + e - f
 
-    # Ancient code :
-    # def gas_heating(self, T_e, T_g, n_e, n_g):
-    #    """Calculates the derivative of the gas energy : 3/2*n_g*k_b*T_g"""
-    #    K_in = SIGMA_I * maxwellian_flux_speed(T_g, self.m_i)
-    #    lambda_0 = self.R / 2.405 + self.L / pi
-    #    # lambda_0 =np.sqrt((self.R / 2.405)**2 + (self.L / pi)**2)
-    #    a = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
-    #    b = (1/4) * self.m_i * (u_B(T_e, self.m_i)**2) * n_e * n_g * K_in 
-    #    c = self.kappa * (T_g - self.T_g_0) * self.A / (self.V * lambda_0)
-    #    return a + b - c
-
-#     def gas_heating(self, T_e, T_g, n_e, n_g):
-#         """Calculates the derivative of the gas energy : 3/2*n_g*k_b*T_g"""
-#         K_in = SIGMA_I * maxwellian_flux_speed(T_g, self.m_i)
-#         lambda_0 = self.R / 2.405 + self.L / pi
-#         # lambda_0 =np.sqrt((self.R / 2.405)**2 + (self.L / pi)**2)
-#         a = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
-#         b = (1/4) * self.m_i * (u_B(T_e, self.m_i)**2) * n_e * n_g * K_in 
-#         c = self.kappa * (T_g - self.T_g_0) * self.A / (self.V * lambda_0)
-#         return a + b - c
-# * A supprimer (gardé pour référence)
-    # def particle_balance_e(self, T_e, T_g, n_e, n_g):
-    #     """Calculates the derivative of the electron density : n_e"""
-    #     a = n_e * n_g * self.K_iz(T_e)
-    #     b = n_e * u_B(T_e, self.m_i) * A_eff(n_g, self.R, self.L) / self.V
-    #     return a - b
-
-    # def particle_balance_g(self, T_e, T_g, n_e, n_g):
-    #     """Calculates the derivative of the neutral gas density : n_g"""
-    #     a = self.Q_g /self.V
-    #     b = n_e * u_B(T_e, self.m_i) * A_eff_1(n_g, self.R, self.L, self.beta_i) / self.V
-    #     c = n_e * n_g * self.K_iz(T_e)
-    #     d = (1/4) * n_g * maxwellian_flux_speed(T_g, self.m_i) * self.A_g / self.V
-    #     return a + b - c - d
 
     def particle_balance(self, state: NDArray[float]): # type: ignore
         """Takes the state as input and returns derivative of all particle densities
