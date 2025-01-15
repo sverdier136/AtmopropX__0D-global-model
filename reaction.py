@@ -15,7 +15,7 @@ class Reaction:
                 stoechio_coeffs : stoechiometric coefficients always positive
     """
 
-    def __init__(self, species, reactives, products, rate_constant, energy_treshold, stoechio_coeffs=None):
+    def __init__(self, species: Species, reactives: list[str], products: list[str], rate_constant, energy_treshold: float, stoechio_coeffs: list[float]=None, spectators: list[str]=None):
         """
         Reaction class
         /!\ Electrons should be added to reactives and products only if they are not spectators (otherwise pbs with density_rate_change)
@@ -23,7 +23,7 @@ class Reaction:
                 species : instance of class Species, lists all species present 
                 reactives : list with all reactives names
                 products : list with all products names
-                rate_constant : function taking as arguments (T_g, T_e, )
+                rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
                 stoechio_coeffs : stoechiometric coefficients always positive"""
         self.species = species
 
@@ -48,13 +48,14 @@ class Reaction:
 
         self.energy_threshold = energy_treshold
         self.rate_constant = rate_constant     # func
+        self.spectators = spectators
         
 
     def density_change_rate(self, state: NDArray[float]): # type: ignore
         """Returns an np.array with the change rate for each species due to this reaction
         state has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
         K = self.rate_constant(state[self.species.nb:])
-        product = K * np.prod(state[self.reactives_indices+self.products_indices]) # product of rate constant and densities of all the stuff
+        product = K * np.prod(state[self.reactives_indices]) # product of rate constant and densities of all the stuff
         rate = np.zeros(self.species.nb)
         for sp in self.reactives:
             i = self.species.get_index_by_instance(sp)
@@ -65,23 +66,45 @@ class Reaction:
         
         return rate
 
-    def energy_change_rate(self, state: NDArray[float]): # type: ignore
-        K = self.rate_constant(T_g, T_e)
-        product = K * np.prod(densities[self.reactives_indices+self.products_indices]) # product of rate constant and densities of all the stuff
-        energ = self.energy_threshold * product
-        return energ  
-        # returns the contribution of this reaction to P_loss ; works for dissociation, ionization, and excitation ; does NOT include elastic collisions and wall losses
 
+    def electron_energy_change_rate(self, state: NDArray[float]): # type: ignore
+        """Function meant to return the change in energy due to this specific equation.
+            HOWEVER : seems like it is necessary to account for difference in temperature of atoms molecules and electrons...
+            Thus 1 function per "Temperatur type" will be needed"""
+        K = self.rate_constant(state)
+        product = self.energy_threshold * K * np.prod(state[self.reactives_indices]) # product of energy, rate constant and densities of all the stuff
+        
+        return product
     
+    def __str__(self):
+        """Returns string describing the reaction"""
+        def format_species(species, species_indices):
+            terms = []
+            for idx, sp in zip(species_indices, species):
+                coeff = self.stoechio_coeffs[idx]
+                # Format coefficient: display as integer if it is a whole number, else as float with 2 decimals
+                if coeff.is_integer():
+                    coeff_str = f"{int(coeff)}" if coeff != 1 else ""
+                else:
+                    coeff_str = f"{coeff:.2f}" 
+                term = f"{coeff_str} {sp.name}".strip()
+                terms.append(term)
+            return " + ".join(terms)
+
+        reactives_str = format_species(self.reactives, self.reactives_indices)
+        products_str = format_species(self.products, self.products_indices)
+        return f"{reactives_str} -> {products_str}          K_r = {self.rate_constant.__name__}"
+
 
 
 if __name__ == "__main__":
-    def K(Ts):
+    def K_diss_I2(Ts):
         print("Temperatures : ",Ts)
         return 2
     
     species_list = Species([Specie("I0", 10.57e-27, 0), Specie("I1", 10.57e-27, 0), Specie("I2", 10.57e-27, 0), Specie("I3", 10.57e-27, 0), Specie("I4", 10.57e-27, 0), Specie("I5", 10.57e-27, 0)])
 
-    reac = Reaction(species_list, ["I2", "I4"], ["I5"], K, 10)
+    reac = Reaction(species_list, ["I2", "I4"], ["I5"], K_diss_I2, 10)
     state = np.array([1,2,3,4,5,6, -181,-182]) # jusqu'à 6 = densité, apres T°
     print(reac.density_change_rate(state))
+    print(reac)
