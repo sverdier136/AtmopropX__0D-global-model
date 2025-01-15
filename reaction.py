@@ -23,7 +23,7 @@ class Reaction:
                 species : instance of class Species, lists all species present 
                 reactives : list with all reactives names
                 products : list with all products names
-                rate_constant : function taking as arguments (T_g, T_e, )
+                rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
                 stoechio_coeffs : stoechiometric coefficients always positive"""
         self.species = species
 
@@ -55,7 +55,7 @@ class Reaction:
         """Returns an np.array with the change rate for each species due to this reaction
         state has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
         K = self.rate_constant(state[self.species.nb:])
-        product = K * np.prod(state[self.reactives_indices+self.products_indices]) # product of rate constant and densities of all the stuff
+        product = K * np.prod(state[self.reactives_indices]) # product of rate constant and densities of all the stuff
         rate = np.zeros(self.species.nb)
         for sp in self.reactives:
             i = self.species.get_index_by_instance(sp)
@@ -67,20 +67,14 @@ class Reaction:
         return rate
 
 
-    def energy_change_rate(self, state: NDArray[float]): # type: ignore
+    def electron_energy_change_rate(self, state: NDArray[float]): # type: ignore
         """Function meant to return the change in energy due to this specific equation.
             HOWEVER : seems like it is necessary to account for difference in temperature of atoms molecules and electrons...
             Thus 1 function per "Temperatur type" will be needed"""
-        pass
-        # K = self.rate_constant(T_g, T_e)
-        # product = K * np.prod(densities[self.reactives_indices+self.products_indices]) # product of rate constant and densities of all the stuff
-        # rate = np.zeros(self.species.nb)
-        # for sp in self.reactives:
-        #     rate[self.species.get_index_by_instance(sp)] = - product
-        # for sp in self.products:
-        #     rate[self.species.get_index_by_instance(sp)] = + product
+        K = self.rate_constant(state)
+        product = self.energy_threshold * K * np.prod(state[self.reactives_indices]) # product of energy, rate constant and densities of all the stuff
         
-        # return rate
+        return product
     
     def __str__(self):
         """Returns string describing the reaction"""
