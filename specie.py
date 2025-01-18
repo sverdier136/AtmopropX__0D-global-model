@@ -2,13 +2,11 @@
 
 class Specie:
 
-    species = []
-    species_name = []
-
-    def __init__(self, name, mass, charge):
+    def __init__(self, name, mass, charge, nb_atoms):
         self.name = name
         self.mass = mass
         self.charge = charge
+        self.nb_atoms = nb_atoms
         self.index = None
 
 class Species:

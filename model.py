@@ -91,56 +91,60 @@ class GlobalModel:
             prop[i] = func(sol[i])
         return prop
 
-    def P_loss(self, T_e, T_g, n_e, n_g):
-        # Old code :
-        # a = self.E_iz * n_e * n_g * self.K_iz(T_e)
-        # b = self.E_ex * n_e * n_g * self.K_ex(T_e)
-        # c = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
-        # d = 7 * k * T_e * n_e * u_B(T_e, self.m_i) * A_eff(n_g, self.R, self.L) / self.V
+    # def P_loss(self, state):
+    #     """
+    #     Calcule les pertes d'énergie des électrons :
+    #     - Ionisation
+    #     - Excitation
+    #     - Collisions élastiques
+    #     - Pertes aux parois
+    #     - Dissociation et excitation vibrationnelle (plasma d'air)
+    #     """
+    #     # Ionisation et excitation
+    #     a = self.E_iz * n_e * n_g * self.K_iz(T_e)
+    #     b = self.E_ex * n_e * n_g * self.K_ex(T_e)
         
-        # return a + b + c + d
-        """
-        Calcule les pertes d'énergie des électrons :
-        - Ionisation
-        - Excitation
-        - Collisions élastiques
-        - Pertes aux parois
-        - Dissociation et excitation vibrationnelle (plasma d'air)
-        """
-        # Ionisation et excitation
-        a = self.E_iz * n_e * n_g * self.K_iz(T_e)
-        b = self.E_ex * n_e * n_g * self.K_ex(T_e)
-        
-        # Collisions élastiques (énergie transférée au gaz)
-        c = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
+    #     # Collisions élastiques (énergie transférée au gaz)
+    #     c = 3 * (m_e / self.m_i) * k * (T_e - T_g) * n_e * n_g * self.K_el(T_e)
 
-        # Pertes aux parois
-        d = 7 * k * T_e * n_e * u_B(T_e, self.m_i) * A_eff(n_g, self.R, self.L) / self.V
+    #     # Pertes aux parois
+    #     d = 7 * k * T_e * n_e * u_B(T_e, self.m_i) * A_eff(n_g, self.R, self.L) / self.V
 
-        # Dissociation et excitation vibrationnelle 
-        K_diss = self.K_diss(T_e)  # Taux de dissociation
+    #     # Dissociation et excitation vibrationnelle 
+    #     K_diss = self.K_diss(T_e)  # Taux de dissociation
 
-        e = self.E_diss * n_e * n_g * K_diss
-        f = E_vibr * n_e * n_g * K_vibr
+    #     e = self.E_diss * n_e * n_g * K_diss
+    #     f = E_vibr * n_e * n_g * K_vibr
 
-        return a + b + c + d + e + f
+    #     return a + b + c + d + e + f
 
 
     
 
-    def P_abs(self, T_e, n_e, n_g):
+    def P_abs(self, state):
+        # ! n_g à changer
         return R_ind(self.R, self.L, self.N, self.omega, n_e, n_g, self.K_el(T_e)) * self.I_coil**2 / 2 # the original code divided by V : density of power ?
     
-    def electron_heating(self, T_e, n_e, n_g):
-        # returns the derivative of electron energy : d/dt (3/2 n_e e T_e)
-        power_balance = P_abs(self, T_e, n_e, n_g) - P_loss(self, T_e, T_g, n_e, n_g)
+    def electron_energy_derivative(self, state):
+        """Returns the derivative of electron energy : d/dt (3/2 n_e e T_e)
+
+        Input :
+        'state' has format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato] """
+        # ! losses with walls not considered
+        p_loss = 0
+        for reac in self.reaction_set:
+                p_loss += reac.electron_loss_power(state)        
+        power_balance = self.P_abs(state) - p_loss
+
         return power_balance
 
 
-    def gas_heating(self, T_e, T_g, n_e, n_g):
+    def monoatomic_gas_energy_derivative(self, state):
         """
         Calcule la dérivée de l'énergie du gaz : (3/2) * n_g * k_B * T_g
-        pour un plasma d'air atmosphérique.
+        
+        Input :
+        'state' has format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
         """
 
         # Taux de réaction
@@ -171,7 +175,7 @@ class GlobalModel:
         return a + b + c + d + e - f
 
 
-    def particle_balance(self, state: NDArray[float]): # type: ignore
+    def particles_densities_derivative(self, state: NDArray[float]): # type: ignore
         """Takes the state as input and returns derivative of all particle densities
             Input :
             state : describes state. Has format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato] """
@@ -181,14 +185,14 @@ class GlobalModel:
         # dn[2] = inflow_of_N2 ...
         return dn
     
-    def energy_balance(self, state: NDArray[float]): # type: ignore
-        """Takes the state as input and returns derivative of all energies
-            Input :
-            state : describes state. Has format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato] """
-        nb_e = state.shape[0] - self.species.nb
-        dE = np.zeros(nb_e) 
-        #pass
-        return dE    
+    # def energies_derivatives(self, state: NDArray[float]): # type: ignore
+    #     """Takes the state as input and returns derivative of all energies
+    #         Input :
+    #         state : describes state. Has format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato] """
+    #     nb_e = state.shape[0] - self.species.nb
+    #     dE = np.zeros(nb_e) 
+    #     #pass
+    #     return dE    
 
 
     def P_rf(self, state: NDArray[float]): # type: ignore
@@ -199,12 +203,13 @@ class GlobalModel:
         return (1/2) * (R_ind_val + self.R_coil) * self.I_coil**2
 
     def f_dy(self, t, state):
-        """Returns the derivative of the vector y describing the state of plasma.
-            y has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
+        """Returns the derivative of the vector 'state' describing the state of plasma.
+            'state' has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
         dy = np.zeros(state.shape)
 
-        dy[:self.species.nb] = self.particle_balance(state)
-        dy[self.species.nb :] = self.energy_balance(state)
+        dy[:self.species.nb] = self.particles_densities_derivative(state)
+        dy[self.species.nb] = self.electron_energy_derivative(state)
+        dy[self.species.nb] = self.monoatomic_gas_energy_derivative(state)
 
         return dy
     

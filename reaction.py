@@ -1,5 +1,8 @@
+from typing import override
 import numpy as np
 from numpy.typing import NDArray
+from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
+
 from specie import Specie, Species
 
 
@@ -27,11 +30,11 @@ class Reaction:
                 stoechio_coeffs : stoechiometric coefficients always positive"""
         self.species = species
 
-        self.reactives = [self.species.get_specie_by_name(name) for name in reactives]
+        self.reactives: list[Specie] = [self.species.get_specie_by_name(name) for name in reactives]
         self.reactives_indices = [self.species.get_index_by_instance(sp) for sp in self.reactives]
         assert max(self.reactives_indices) < self.species.nb , "Reactive index is greater than number of species"
 
-        self.products = [self.species.get_specie_by_name(name) for name in products]
+        self.products: list[Specie] = [self.species.get_specie_by_name(name) for name in products]
         self.products_indices = [self.species.get_index_by_instance(sp) for sp in self.products]
         assert max(self.products_indices) < self.species.nb , "Product index is greater than number of species"
 
@@ -67,14 +70,15 @@ class Reaction:
         return rate
 
 
-    def electron_energy_change_rate(self, state: NDArray[float]): # type: ignore
+    def electron_loss_power(self, state: NDArray[float]): # type: ignore
         """Function meant to return the change in energy due to this specific equation.
             HOWEVER : seems like it is necessary to account for difference in temperature of atoms molecules and electrons...
             Thus 1 function per "Temperatur type" will be needed"""
         K = self.rate_constant(state)
-        product = self.energy_threshold * K * np.prod(state[self.reactives_indices]) # product of energy, rate constant and densities of all the stuff
+        power_loss = self.energy_threshold * K * np.prod(state[self.reactives_indices]) # product of energy, rate constant and densities of all the stuff
         
-        return product
+        return power_loss
+    
     
     def __str__(self):
         """Returns string describing the reaction"""
@@ -108,3 +112,26 @@ if __name__ == "__main__":
     state = np.array([1,2,3,4,5,6, -181,-182]) # jusqu'à 6 = densité, apres T°
     print(reac.density_change_rate(state))
     print(reac)
+
+
+
+
+class ElasticCollisionWithElectron(Reaction):
+
+    def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float):
+        super().__init__(species, [colliding_specie], [colliding_specie], rate_constant, energy_treshold)
+
+    @override
+    def density_change_rate(self, state):
+        return np.zeros(self.species.nb)
+
+
+    @override
+    def electron_loss_power(self, state):
+        K = self.rate_constant(state)
+        mass_ratio = m_e / self.reactives[0].mass
+        delta_temp = state[self.species.nb] - state[self.species.nb + self.reactives[0].nb_atoms ]
+
+        energy_change = 3 * mass_ratio * k_B * delta_temp * state[0] * state[self.reactives_indices[0]] * K 
+   
+        return energy_change
