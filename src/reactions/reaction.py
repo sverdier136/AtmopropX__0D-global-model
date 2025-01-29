@@ -133,3 +133,7 @@ if __name__ == "__main__":
     state = np.array([1,2,3,4,5,6, -181,-182]) # jusqu'à 6 = densité, apres T°
     print(reac.density_change_rate(state))
     print(reac)
+
+
+
+#un commentaire
