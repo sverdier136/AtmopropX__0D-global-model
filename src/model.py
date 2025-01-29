@@ -5,10 +5,10 @@ from scipy.integrate import trapezoid, solve_ivp, odeint
 from scipy.interpolate import interp1d
 
 #Local modules
-from util import load_csv, load_cross_section
-from auxiliary_funcs import pressure, maxwellian_flux_speed, u_B, A_eff, A_eff_1, SIGMA_I, R_ind, h_L
-from specie import Specie, Species
-from reaction import Reaction
+from src.util import load_csv, load_cross_section
+from src.auxiliary_funcs import pressure, maxwellian_flux_speed, u_B, A_eff, A_eff_1, SIGMA_I, R_ind, h_L
+from src.specie import Specie, Species
+from reactions.reaction import Reaction
 
 class GlobalModel:
 
@@ -203,6 +203,7 @@ class GlobalModel:
         return (1/2) * (R_ind_val + self.R_coil) * self.I_coil**2
 
     def f_dy(self, t, state):
+        # ! Dérivée en température !!!
         """Returns the derivative of the vector 'state' describing the state of plasma.
             'state' has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
         dy = np.zeros(state.shape)

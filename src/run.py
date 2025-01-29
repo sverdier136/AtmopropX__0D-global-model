@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.constants import k, e, pi
-from model import GlobalModel
-from config import config_dict
+from src.model import GlobalModel
+from src.config import config_dict
 
 print("start")
 

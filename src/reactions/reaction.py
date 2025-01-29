@@ -3,7 +3,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
 
-from specie import Specie, Species
+from src.specie import Specie, Species
 
 
 class Reaction:
@@ -101,21 +101,6 @@ class Reaction:
 
 
 
-if __name__ == "__main__":
-    def K_diss_I2(Ts):
-        print("Temperatures : ",Ts)
-        return 2
-    
-    species_list = Species([Specie("I0", 10.57e-27, 0), Specie("I1", 10.57e-27, 0), Specie("I2", 10.57e-27, 0), Specie("I3", 10.57e-27, 0), Specie("I4", 10.57e-27, 0), Specie("I5", 10.57e-27, 0)])
-
-    reac = Reaction(species_list, ["I2", "I4"], ["I5"], K_diss_I2, 10)
-    state = np.array([1,2,3,4,5,6, -181,-182]) # jusqu'à 6 = densité, apres T°
-    print(reac.density_change_rate(state))
-    print(reac)
-
-
-
-
 class ElasticCollisionWithElectron(Reaction):
 
     def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float):
@@ -135,3 +120,16 @@ class ElasticCollisionWithElectron(Reaction):
         energy_change = 3 * mass_ratio * k_B * delta_temp * state[0] * state[self.reactives_indices[0]] * K 
    
         return energy_change
+    
+
+if __name__ == "__main__":
+    def K_diss_I2(Ts):
+        print("Temperatures : ",Ts)
+        return 2
+    
+    species_list = Species([Specie("I0", 10.57e-27, 0), Specie("I1", 10.57e-27, 0), Specie("I2", 10.57e-27, 0), Specie("I3", 10.57e-27, 0), Specie("I4", 10.57e-27, 0), Specie("I5", 10.57e-27, 0)])
+
+    reac = Reaction(species_list, ["I2", "I4"], ["I5"], K_diss_I2, 10)
+    state = np.array([1,2,3,4,5,6, -181,-182]) # jusqu'à 6 = densité, apres T°
+    print(reac.density_change_rate(state))
+    print(reac)
