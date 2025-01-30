@@ -239,3 +239,5 @@ class GlobalModel:
             solution[i] = final_state
             
         return p, solution
+
+#Test
