@@ -11,7 +11,7 @@ class Reaction:
         Instances of Reaction represents a reaction between two species, between a specie and the walls,...
         It uses variable state with format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
 
-        Has 4 functions :
+        Has 2 functions that must be reimplemented in classes inheriting 'Reaction' :
             - density_change_rate(state) : variation of species densities due to this specific reaction. Returns array of length species.nb
             - energy_change_rate(state) : variation of energies of electrons, monoatomic,... due to this specific reaction. Returns array of length number of temperature
     """

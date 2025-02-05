@@ -9,7 +9,9 @@ from src.reactions.reaction import Reaction
 
 class DefaultReaction(Reaction):
     """
-        Represents default reaction where reaction speed is K * n_reac1 * n_reac2 ...
+        Represents default reaction of an interaction between an electron and a molecule 
+        where reaction speed is K * n_e * n_mol ...
+        Works for 3 temperatures : that of electrons, monoatomic and diatomic particles
 
     """
 
@@ -24,7 +26,7 @@ class DefaultReaction(Reaction):
                  ):
         """
         Reaction class
-        /!\ Electrons should be added to reactives and products only if they are not spectators (otherwise pbs with density_rate_change)
+        /!\ Electrons should be added to reactives and products
             Inputs : 
                 species : instance of class Species, lists all species present 
                 reactives : list with all reactives names
@@ -63,21 +65,22 @@ class DefaultReaction(Reaction):
         rate = np.zeros(3)
 
         K = self.rate_constant(state)
-        for i, reac_sp in enumerate(self.reactives):
+        reac_speed = K * np.prod(state[self.reactives_indices])
+        for reac_sp in self.reactives:
             if reac_sp.nb_atoms == 0 :
-                electron_power_loss = self.energy_threshold * K * np.prod(state[self.reactives_indices]) # product of energy, rate constant and densities of all the stuff
+                electron_power_loss = self.energy_threshold * reac_speed # product of energy, rate constant and densities of all the stuff
                 rate[0] = electron_power_loss
 
             elif reac_sp.nb_atoms == 1 :
                 mass_ratio = m_e / reac_sp.mass
                 delta_temp = state[self.species.nb] - state[self.species.nb + reac_sp.nb_atoms] # T_e - T_monoatomic
-                monoatomic_energy_change = 3 * mass_ratio * k_B * delta_temp * state[0] * state[i] * K 
+                monoatomic_energy_change = 3 * mass_ratio * k_B * delta_temp * reac_speed
                 rate[1] = monoatomic_energy_change
 
             elif reac_sp.nb_atoms == 2 :
                 mass_ratio = m_e / reac_sp.mass
                 delta_temp = state[self.species.nb] - state[self.species.nb + reac_sp.nb_atoms] # T_e - T_monoatomic
-                monoatomic_energy_change = 3 * mass_ratio * k_B * delta_temp * state[0] * state[i] * K 
+                monoatomic_energy_change = 3 * mass_ratio * k_B * delta_temp * reac_speed 
                 rate[2] = monoatomic_energy_change
 
             else:
