@@ -7,6 +7,8 @@ R = 6e-2
 L = 10e-2
 s = 1e-3
 
+V_chamber = pi*R**2*L
+
 # Neutral flow
 m_i = 2.18e-25
 Q_g = 1.2e19
