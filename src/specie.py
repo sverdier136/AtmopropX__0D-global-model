@@ -11,7 +11,7 @@ class Specie:
 
 class Species:
 
-    def __init__(self, species_list):
+    def __init__(self, species_list: list[Specie]):
         """Contains all species present in the problem. Should contain the electrons."""
         self.species = species_list
         self.names = [sp.name for sp in self.species]
