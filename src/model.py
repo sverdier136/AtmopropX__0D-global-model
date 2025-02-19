@@ -6,7 +6,7 @@ from scipy.interpolate import interp1d
 
 #Local modules
 from src.util import load_csv, load_cross_section
-from src.auxiliary_funcs import pressure, maxwellian_flux_speed, u_B, A_eff, A_eff_1, SIGMA_I, R_ind, h_L
+from src.auxiliary_funcs import pressure, maxwellian_flux_speed, u_B, A_eff, A_eff_1, SIGMA_I, h_L
 from src.specie import Specie, Species
 from reactions.reaction import Reaction
 from config import *
@@ -76,52 +76,25 @@ class GlobalModel:
             prop[i] = func(sol[i])
         return prop
     
+    def R_ind(R, L, N, omega, n_e, n_g, K_el):
+        ep = eps_p(omega, n_e, n_g, K_el)
+        k_p = (omega / c) * np.sqrt(ep)
+        a = 2 * pi * N**2 / (L * omega * eps_0)
+        b = 1j * k_p * R * jv(1, k_p * R) / (ep * jv(0, k_p * R))
+        return a * np.real(b)
 
     def P_abs(self, state):
         # ! n_g à changer
         return R_ind(self.R, self.L, self.N, self.omega, n_e, n_g, self.K_el(T_e)) * self.I_coil**2 / 2 # the original code divided by V : density of power ?
     
-    
-    def electron_energy_derivative(self, state):
-        """Returns the derivative of electron energy : d/dt (3/2 n_e e T_e)
 
-        Input :
-        'state' has format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato] """
-        # ! losses with walls not considered
-        p_loss = 0
-        for reac in self.reaction_set:
-                p_loss += reac.electron_loss_power(state)        
-        power_balance = self.P_abs(state) - p_loss
+    # def P_rf(self, state: NDArray[float]): # type: ignore
+    #     """Calculates the power delivered by the coil using RF"""
+    #     # ! To adapt to new var state
+    #     T_e, T_g, n_e, n_g = state
+    #     R_ind_val = R_ind(self.R, self.L, self.N, self.omega, n_e, n_g, self.K_el(T_e))
+    #     return (1/2) * (R_ind_val + self.R_coil) * self.I_coil**2
 
-        return power_balance
-
-
-    def particles_densities_derivative(self, state: NDArray[float]): # type: ignore
-        """Takes the state as input and returns derivative of all particle densities
-            Input :
-            state : describes state. Has format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato] """
-        dn = np.zeros(self.species.nb)
-        for reac in self.reaction_set:
-            dn += reac.density_change_rate(state)
-        # dn[2] = inflow_of_N2 ...
-        return dn
-    
-    # def energies_derivatives(self, state: NDArray[float]): # type: ignore
-    #     """Takes the state as input and returns derivative of all energies
-    #         Input :
-    #         state : describes state. Has format [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato] """
-    #     nb_e = state.shape[0] - self.species.nb
-    #     dE = np.zeros(nb_e) 
-    #     #pass
-    #     return dE    
-
-
-    def P_rf(self, state: NDArray[float]): # type: ignore
-        """Calculates the power delivered by the coil using RF"""
-        # ! To adapt to new var state
-        T_e, T_g, n_e, n_g = state
-        R_ind_val = R_ind(self.R, self.L, self.N, self.omega, n_e, n_g, self.K_el(T_e))
-        return (1/2) * (R_ind_val + self.R_coil) * self.I_coil**2
 
     def f_dy(self, t, state):
         """Returns the derivative of the vector 'state' describing the state of plasma.
@@ -136,6 +109,9 @@ class GlobalModel:
         for reac in self.reaction_set:
             dy_densities += reac.density_change_rate(state)
             dy_energies += reac.energy_change_rate(state)
+
+        # Energy given to the electrons via the coil
+        dy_energies[0] += self.P_abs(state)
         #Transform derivative of energy into derivative of temperature
         dy_temp = 2/3 * dy_energies/(e*densities) - dy_densities*temp_by_sp/densities
 

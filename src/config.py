@@ -1,4 +1,5 @@
 from scipy.constants import e, k, pi
+import numpy as np
 
 
 # ! A vérifier
@@ -6,8 +7,6 @@ from scipy.constants import e, k, pi
 R = 6e-2
 L = 10e-2
 s = 1e-3
-
-V_chamber = pi*R**2*L
 
 # Neutral flow
 m_i = 2.18e-25
@@ -29,6 +28,27 @@ I_coil = 26
 T_e_0 = 3 * e / k
 n_e_0 = 1e18
 T_g_0 = 300
+
+
+# * Variable définie à partir des précédentes
+
+
+# @property
+# def A_g(self): return self.beta_g * pi * self.R**2
+
+# @property
+# def A_i(self): return self.beta_i * pi * self.R**2
+
+
+V_chamber = pi * R**2 * L 
+
+# @property
+# def A(self): return 2*pi*self.R**2 + 2*pi*self.R*self.L
+
+# @property
+# def v_beam(self): 
+#     """Ion beam's exit speed"""
+#     return np.sqrt(2 * e * self.V_grid / self.m_i)
 
 
 

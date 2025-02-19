@@ -39,10 +39,4 @@ def eps_p(omega, n_e, n_g, K_el):
     return 1 - (omega_pe_sq / (omega * (omega -  nu_m_i)))
 
 
-def R_ind(R, L, N, omega, n_e, n_g, K_el):
-    ep = eps_p(omega, n_e, n_g, K_el)
-    k_p = (omega / c) * np.sqrt(ep)
-    a = 2 * pi * N**2 / (L * omega * eps_0)
-    b = 1j * k_p * R * jv(1, k_p * R) / (ep * jv(0, k_p * R))
 
-    return a * np.real(b)
