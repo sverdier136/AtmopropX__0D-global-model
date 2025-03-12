@@ -1,11 +1,12 @@
 import numpy as np
-from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e
+from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e, N_A
 from scipy.special import jv
 
 SIGMA_I = 1e-18 # Review this for iodine
 
-def u_B(T_e, m_i):
-    return np.sqrt(k * T_e / m_i)
+def u_B(T_e, m_ion):
+    """T_e in eV, m_ion is mass of single ion"""
+    return np.sqrt(e*T_e/(N_A*m_ion))
 
 def h_L(n_g, L):
     lambda_i = 1/(n_g * SIGMA_I)
@@ -38,5 +39,12 @@ def eps_p(omega, n_e, n_g, K_el):
     nu_m_i = 1j * K_el * n_g
     return 1 - (omega_pe_sq / (omega * (omega -  nu_m_i)))
 
+def gamma_ions(n_ion, m_ion, T_e, L):
+    return h_L(n_ion, L) * n_ion * u_B(T_e, m_ion)
 
+def gamma_e(n_e, T_e):
+    return n_e * u_B(T_e, m_e)
+
+def gamma_neutral(n_neutral, T_neutral, m_neutral):
+    return n_neutral*np.sqrt(8*e*T_neutral/(pi*N_A*m_neutral))/4
 
