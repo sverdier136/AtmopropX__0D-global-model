@@ -1,6 +1,6 @@
 from src.reactions.reaction import Reaction
 
-class ElasticCollision(Reaction):
+class GeneralElasticCollision(Reaction):
     """Should be inherited by all ellastic collisions considered in the calculation of the plasma dielectric permitivity
         Inherits from Reaction and adds the abstract function : get_eps_i that should be implemented by all children
     """

@@ -1,4 +1,3 @@
-from typing import override
 import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant

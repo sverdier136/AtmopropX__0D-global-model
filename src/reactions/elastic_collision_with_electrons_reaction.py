@@ -6,12 +6,12 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 from src.specie import Specie, Species
 from src.reactions.reaction import Reaction
 from src.chamber_caracteristics import Chamber
-from src.reactions.general_elastic_collision import ElasticCollision
+from src.reactions.general_elastic_collision import GeneralElasticCollision
 
 # * A check + chamber
 # ! omega a changer selon nom dans Chamber
 
-class ElasticCollisionWithElectron(ElasticCollision):
+class ElasticCollisionWithElectron(GeneralElasticCollision):
     """
     Elastic collision between a particle and an electron
     Works with 3 temperatures : Te, Tmono, Tdiat
