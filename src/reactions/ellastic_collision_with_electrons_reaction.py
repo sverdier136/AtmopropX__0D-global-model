@@ -7,6 +7,8 @@ from src.specie import Specie, Species
 from src.reactions.reaction import Reaction
 from src.chamber_caracteristics import Chamber
 
+# * A check + chamber
+
 class ElasticCollisionWithElectron(Reaction):
     """
     Elastic collision between a particle and an electron
@@ -23,7 +25,7 @@ class ElasticCollisionWithElectron(Reaction):
                 rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
                 energy_threshold : energy threshold of electron so that reaction occurs
         """
-        super().__init__(species, [species.names[0], colliding_specie], [species.names[0], colliding_specie], rate_constant, energy_treshold)
+        super().__init__(species, [species.names[0], colliding_specie], [species.names[0], colliding_specie], rate_constant, energy_treshold, chamber)
 
     @override
     def density_change_rate(self, state):

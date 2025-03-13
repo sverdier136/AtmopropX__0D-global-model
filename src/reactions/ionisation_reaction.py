@@ -5,7 +5,10 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 
 from src.specie import Specie, Species
 from src.reactions.reaction import Reaction
+from src.chamber_caracteristics import Chamber
 
+
+# * To be checked
 
 class Ionisation(Reaction):
     """
@@ -20,7 +23,8 @@ class Ionisation(Reaction):
                  molecule_before_ionization_name: str, 
                  molecule_after_ionization_name: str,
                  rate_constant, 
-                 threshold_energy: float
+                 threshold_energy: float,
+                 chamber: Chamber
                  ):
         """
         Reaction class
@@ -32,7 +36,7 @@ class Ionisation(Reaction):
                 energy_threshold : energy threshold of electron so that reaction occurs
         """
         # species.names[0] nom des électrons
-        super().__init__(species, [species.names[0], molecule_before_ionization_name], [species.names[0], molecule_after_ionization_name])
+        super().__init__(species, [species.names[0], molecule_before_ionization_name], [species.names[0], molecule_after_ionization_name], chamber)
 
         self.threshold_energy = threshold_energy
         self.rate_constant = rate_constant   # func

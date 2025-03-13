@@ -6,16 +6,18 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 from src.specie import Specie, Species
 from src.reactions.reaction import Reaction
 from src.config import *
+from src.chamber_caracteristics import Chamber
 
 
 # * OK ! Vérif par Liam
+# ! A recheck pour Chamber
 
 class GasInjection(Reaction):
     """
     Represents the gas injection : adds quantity to ne, ...
     """
 
-    def __init__(self, species: Species, injection_rates: NDArray[np.float], T_injection: float):
+    def __init__(self, species: Species, injection_rates: NDArray[np.float], T_injection: float, chamber: Chamber):
         """
         Dissociation class
             Inputs : 
@@ -25,13 +27,13 @@ class GasInjection(Reaction):
                 T_injection : temperature at which the gas is injected into the chamber
         """
         species_injected_names = [species.names[i] for i in range(species.nb) if injection_rates[i] != 0]
-        super().__init__(species, [], species_injected_names)
+        super().__init__(species, [], species_injected_names, chamber)
         self.injection_rates = injection_rates
         self.T_injection = T_injection
 
     @override
     def density_change_rate(self, state):
-        return self.injection_rates / V_chamber 
+        return self.injection_rates / self.chamber.V_chamber 
 
     
     @override
@@ -39,6 +41,6 @@ class GasInjection(Reaction):
         rate = np.zeros(3)
 
         for sp in self.products:
-            rate[sp.nb_atoms] += 3/2 * self.injection_rates[sp.index] / V_chamber * self.T_injection
+            rate[sp.nb_atoms] += 3/2 * self.injection_rates[sp.index] / self.chamber.V_chamber * self.T_injection
 
         return rate

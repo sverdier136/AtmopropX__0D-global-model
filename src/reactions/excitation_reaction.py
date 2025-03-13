@@ -5,7 +5,10 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 
 from src.specie import Specie, Species
 from src.reactions.reaction import Reaction
+from src.chamber_caracteristics import Chamber
 
+
+# * To be checked
 
 class Excitation(Reaction):
     """
@@ -19,7 +22,8 @@ class Excitation(Reaction):
                  species: Species, 
                  molecule_name: str, 
                  rate_constant, 
-                 threshold_energy: float
+                 threshold_energy: float,
+                 chamber: Chamber
                  ):
         """
         Reaction class
@@ -34,7 +38,7 @@ class Excitation(Reaction):
                 spectators : list with spectators names (used to print reaction)
         """
         # species.names[0] nom des électrons
-        super().__init__(species, [species.names[0], molecule_name], [species.names[0], molecule_name])
+        super().__init__(species, [species.names[0], molecule_name], [species.names[0], molecule_name], chamber)
 
         self.threshold_energy = threshold_energy
         self.rate_constant = rate_constant   # func
