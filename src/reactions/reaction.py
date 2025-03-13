@@ -4,8 +4,10 @@ from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
 
 from src.specie import Specie, Species
+from src.chamber_caracteristics import Chamber
 
 # * Ok ! Vérifié par Liam
+# ! Recheck pour chamber
 
 class Reaction:
     """
@@ -21,6 +23,7 @@ class Reaction:
                  species: Species, 
                  reactives: list[str], 
                  products: list[str], 
+                 chamber: Chamber,
                  stoechio_coeffs: list[float]=None, 
                  spectators: list[str]=None
                  ):
@@ -56,6 +59,7 @@ class Reaction:
                 self.stoechio_coeffs[i] = 1
 
         self.spectators = spectators
+        self.chamber = chamber
         
 
     def density_change_rate(self, state: NDArray[float]): # type: ignore
