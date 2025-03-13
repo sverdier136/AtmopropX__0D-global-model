@@ -7,6 +7,8 @@ from src.specie import Specie, Species
 from src.reactions.reaction import Reaction
 
 
+# ! Ne pas utiliser : Deprecated + Faux
+
 class DefaultReaction(Reaction):
     """
         Represents default reaction of an interaction between an electron and a molecule 

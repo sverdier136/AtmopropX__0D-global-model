@@ -2,6 +2,10 @@ import numpy as np
 from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e, N_A
 from scipy.special import jv
 
+
+# ! Deprecated, cf Chamber
+
+
 SIGMA_I = 1e-18 # Review this for iodine
 
 def u_B(T_e, m_ion):

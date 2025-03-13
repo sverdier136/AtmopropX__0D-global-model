@@ -7,7 +7,7 @@ from src.specie import Specie, Species
 
 from src.reactions.reaction import Reaction
 
-# ! En cours
+# ! A ne pas utuliser, redondant ------------------- Pas En cours
 
 class ElectronLossToWall(Reaction):
     """
