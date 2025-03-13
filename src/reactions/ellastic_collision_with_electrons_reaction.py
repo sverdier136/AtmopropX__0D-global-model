@@ -4,8 +4,8 @@ from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
 
 from src.specie import Specie, Species
-
 from src.reactions.reaction import Reaction
+from src.chamber_caracteristics import Chamber
 
 class ElasticCollisionWithElectron(Reaction):
     """
@@ -14,10 +14,9 @@ class ElasticCollisionWithElectron(Reaction):
     In reactives, electron must be in first position and colliding_specie next.
     """
 
-    def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float):
+    def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float, chamber: Chamber):
         """
-        Dissociation class
-        /!\ Electrons should NOT be added to reactives and products
+        Ellastic collision between molecule and electron
             Inputs : 
                 species : instance of class Species, lists all species present 
                 colliding_specie : name of specie that collides with an electron. Must be a string !
@@ -40,7 +39,7 @@ class ElasticCollisionWithElectron(Reaction):
         mass_ratio = m_e / self.reactives[1].mass  # self.reactives[1].mass is mass of colliding_specie
         delta_temp = state[self.species.nb] - state[self.species.nb + self.reactives[1].nb_atoms]  # Te - Tspecie
 
-        energy_change = 3 * mass_ratio * k_B * delta_temp * reac_speed 
+        energy_change = 3 * mass_ratio * e * delta_temp * reac_speed 
         
         rate[0] = -energy_change
         rate[self.reactives[1].nb_atoms] = energy_change #mono / diatomic particles gain energy, electrons lose energy
@@ -49,13 +48,9 @@ class ElasticCollisionWithElectron(Reaction):
 
     def get_eps_i(self, state) :
         """ Renvoye la permittivité diélectrique relative due à une réaction de collision ellastique entre un électron et une espèce neutre"""
-        # Il faurda définir omega et les constantes physiques : m_e, eps_0, et e
-        omega_pe_sq = (n_e * e**2) / (m_e * eps_0)
-        # le carré de la pulsation plasma
-        for specie in self.reactives :
-            # On part du principe qu'il n'y a que deux réactifs : l'électron et l'espèce neutre
-            index_neutral = specie.index
-            if indice != 0 :
-                c_neutral = state[index_neutral]
-                nu_m_i = c_neutral * rate_constant
-        return 1 - (omega_pe_sq / (omega * (omega -  nu_m_i)))
+        # plasma pulsation squared
+        omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
+
+        nu_m_i = state[0] * self.rate_constant(state)
+
+        return 1 - (omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  nu_m_i)))
