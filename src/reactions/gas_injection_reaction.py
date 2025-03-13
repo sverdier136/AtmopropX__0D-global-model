@@ -7,6 +7,9 @@ from src.specie import Specie, Species
 from src.reactions.reaction import Reaction
 from src.config import *
 
+
+# * OK ! Vérif par Liam
+
 class GasInjection(Reaction):
     """
     Represents the gas injection : adds quantity to ne, ...

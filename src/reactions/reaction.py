@@ -5,6 +5,7 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 
 from src.specie import Specie, Species
 
+# * Ok ! Vérifié par Liam
 
 class Reaction:
     """
