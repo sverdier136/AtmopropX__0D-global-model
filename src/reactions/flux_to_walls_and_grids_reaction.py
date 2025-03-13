@@ -9,8 +9,9 @@ from src.reactions.reaction import Reaction
 from src.chamber_caracteristics import Chamber
 
 
-# ! En cours
+# * A check
 # ! Valable uniquement pour Chabert
+# ! Vérifier les surfaces : |   Je sais pas si j'ai pris les bonnes !!!!!
 
 class FluxToWallsAndThroughGrids(Reaction):
     """
@@ -47,7 +48,6 @@ class FluxToWallsAndThroughGrids(Reaction):
     
     @override
     def energy_change_rate(self, state):
-        # ! latex a verifier pas homogène
 
         rate = np.zeros(3)
 
@@ -55,10 +55,12 @@ class FluxToWallsAndThroughGrids(Reaction):
 
         rate[0] = - E_kin * self.chamber.gamma_e(state[0], state[self.species.nb]) * S_eff / V_chamber
 
-        for sp in self.species.species[1:] :   # electron are skipped because handled before
-            if sp.charge != 0:
-                rate[sp.index] = - self.chamber.gamma_ion(state[sp.index], state[self.species.nb + sp.nb_atoms]) * S_ion / V_chamber
-            else:
-                rate[sp.index]
+
+        # * Neglected for now because missing energy of ion
+        # for sp in self.species.species[1:] :   # electron are skipped because handled before
+        #     if sp.charge != 0:
+        #         rate[sp.index] = - self.chamber.gamma_ion(state[sp.index], state[self.species.nb + sp.nb_atoms]) * S_ion / V_chamber
+        #     else:
+        #         rate[sp.index]
 
         return rate
