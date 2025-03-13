@@ -65,13 +65,13 @@ class Reaction:
     def density_change_rate(self, state: NDArray[float]): # type: ignore
         """Returns an np.array with the change rate for each species due to this reaction
         state has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
-        pass
+        raise NotImplementedError("Classes inheriting Reaction should implement density_change_rate")
 
     def energy_change_rate(self, state: NDArray[float]): # type: ignore
         """Function meant to return the change in energy due to this specific equation.
             HOWEVER : seems like it is necessary to account for difference in temperature of atoms molecules and electrons...
             Thus 1 function per "Temperatur type" will be needed"""
-        pass
+        raise NotImplementedError("Classes inheriting Reaction should implement energy_change_rate")
     
     
     def __str__(self):

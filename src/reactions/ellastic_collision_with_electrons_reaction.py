@@ -6,10 +6,12 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 from src.specie import Specie, Species
 from src.reactions.reaction import Reaction
 from src.chamber_caracteristics import Chamber
+from src.reactions.general_elastic_collision import ElasticCollision
 
 # * A check + chamber
+# ! omega a changer selon nom dans Chamber
 
-class ElasticCollisionWithElectron(Reaction):
+class ElasticCollisionWithElectron(ElasticCollision):
     """
     Elastic collision between a particle and an electron
     Works with 3 temperatures : Te, Tmono, Tdiat
@@ -47,7 +49,8 @@ class ElasticCollisionWithElectron(Reaction):
         rate[self.reactives[1].nb_atoms] = energy_change #mono / diatomic particles gain energy, electrons lose energy
 
         return rate
-
+    
+    @override
     def get_eps_i(self, state) :
         """ Renvoye la permittivité diélectrique relative due à une réaction de collision ellastique entre un électron et une espèce neutre"""
         # plasma pulsation squared
