@@ -65,7 +65,7 @@ class GlobalModel:
         """Returns the derivative of the vector 'state' describing the state of plasma.
             'state' has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
         densities = state[:self.species.nb]
-        temp_by_sp = [state[self.species.nb + sp.nb_atoms] for sp in self.species.list]
+        temp = state[self.species.nb:]
 
         dy = np.zeros(state.shape)
         dy_densities = np.zeros(self.species.nb)
@@ -91,8 +91,16 @@ class GlobalModel:
 
         # Energy given to the electrons via the coil
         dy_energies[0] += self.P_abs(state)
+
+        # total thermal capacity of all species with same number of atoms : sum of (3/2 or 5/2 * density)
+        total_thermal_capacity_by_sp_type = np.zeros(3)
+        dy_total_thermal_capacity_by_sp_type = np.zeros(3)
+        for sp in self.species.species :
+            total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * densities[sp.index]
+            dy_total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * dy_densities[sp.index]
+            
         #Transform derivative of energy into derivative of temperature
-        dy_temp = 2/3 * dy_energies/(e*densities) - dy_densities*temp_by_sp/densities
+        dy_temp = (dy_energies - temp * dy_total_thermal_capacity_by_sp_type) / total_thermal_capacity_by_sp_type
 
         dy[:self.species.nb] = dy_densities
         dy[self.species.nb:] = dy_temp
