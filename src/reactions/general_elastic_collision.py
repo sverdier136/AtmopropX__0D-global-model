@@ -9,4 +9,7 @@ class GeneralElasticCollision(Reaction):
         super().__init__(species, reactives, products, chamber, stoechio_coeffs, spectators)
 
     def get_eps_i(self, state):
-        raise NotImplementedError("Classes inheriting EllasticCollision should implement get_eps_i")
+        raise NotImplementedError("Classes inheriting ElasticCollision should implement get_eps_i")
+    
+    def colliding_specie_and_collision_frequency(self, state):
+        raise NotImplementedError("Classes inheriting ElasticCollision should implement colliding_specie_and_collision_frequency")
