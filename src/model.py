@@ -25,17 +25,6 @@ class GlobalModel:
         self.reaction_set = reaction_set
     
 
-    def flux_i(self, T_e, T_g, n_e, n_g):
-        """Ion flux leaving the thruster through the grid holes"""
-        return h_L(n_g, self.L) * n_e * u_B(T_e, self.m_i)
-
-    def thrust_i(self, T_e, T_g, n_e, n_g):
-        """Total thrust produced by the ion beam"""
-        return self.flux_i(T_e, T_g, n_e, n_g) * self.m_i * self.v_beam * self.A_i
-
-    def j_i(self, T_e, T_g, n_e, n_g):
-        """Ion current density extracted by the grids"""
-        return self.flux_i(T_e, T_g, n_e, n_g) * e
 
     def eval_property(self, func, sol):
         """Calculates a property based on 'state' for all 't'.
