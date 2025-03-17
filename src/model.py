@@ -52,7 +52,7 @@ class GlobalModel:
     def eps_p (self, collision_frequencies , state) :
         """Calcule la permittivité diélectrique relative due à toutes les réactions de collisions elastiques elctron-neutre. Ces réactions sont considérées séparément par chacun des eps_i
             collision_frequencies : np.array containing the collision frequencies for each specie in the order in which they appear in self.species"""
-        #fonction rendue inutile par le code de f_dy
+        #fonction utilisée dans f_dy
         normalized_c = self.normalised_concentrations(state)
         omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
         epsilons_i = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  collision_frequencies))
