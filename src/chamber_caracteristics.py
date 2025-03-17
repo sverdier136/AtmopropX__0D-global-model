@@ -73,9 +73,35 @@ class Chamber(object):
         nu_m_i = 1j * K_el * n_g
         return 1 - (omega_pe_sq / (omega * (omega -  nu_m_i)))
 
-    def gamma_ion(self, n_ion, m_ion, T_e, L):
+    def gamma_ion(self, n_ion, T_e, L):
+        #m_ion needs to be defined
         return self.h_L(n_ion, L) * n_ion * self.u_B(T_e, m_ion)
 
+    def thrust_i(self, T_e, n_e, n_ion):
+        """Thrust produced by the ion beam of one specie"""
+        return self.gamma_ion(n_ion, T_e, L) * self.m_i * self.v_beam * self.A_i
+
+    def j_i(self, T_e, n_e, n_ion):
+        """Ion current density of one ionic specie extracted by the grids"""
+        #it should take into account the +2 species of ions
+        return self.gamma_ion( n_ion, T_e, L) * e
+        
+    def total_ion_thrust(self , state ) :
+        '''Calculates the total amount of thrust generated'''
+        total_thrust = 0
+        for i in(range(1,len(state)/2)):
+            #test if it is an ion
+            total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i])
+        return total_thrust
+
+    def total_ion_current(self , state ) :
+        '''Calculates the total amount of ion current toxards the grids'''
+        total_current = 0
+        for i in(range(1,len(state)/2)):
+            #test if it is an ion
+            total_current += self.j_i( state[len(state)/2] , state[0] , state[i])
+        return total_current
+        
     def gamma_e(self, n_e, T_e):
         return n_e * self.u_B(T_e, m_e)
 
