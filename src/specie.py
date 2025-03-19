@@ -2,16 +2,17 @@
 
 class Specie:
 
-    def __init__(self, name, mass, charge, nb_atoms):
+    def __init__(self, name, mass, charge, nb_atoms, thermal_capacity):
         self.name = name
         self.mass = mass
         self.charge = charge
         self.nb_atoms = nb_atoms
+        self.thermal_capacity = thermal_capacity
         self.index = None
 
 class Species:
 
-    def __init__(self, species_list):
+    def __init__(self, species_list: list[Specie]):
         """Contains all species present in the problem. Should contain the electrons."""
         self.species = species_list
         self.names = [sp.name for sp in self.species]
@@ -25,6 +26,7 @@ class Species:
         return len(self.species)
 
     def add(self, specie):
+        specie.index = len(self.species)
         self.species.append(specie)
 
     def get_index_by_name(self, name):
