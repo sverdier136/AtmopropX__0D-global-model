@@ -39,7 +39,7 @@ class Chamber(object):
     
     def u_B(self,T_e, m_ion):
         """T_e in eV, m_ion is mass of single ion"""
-        return np.sqrt(k*T_e/(N_A*m_ion))
+        return np.sqrt(e*T_e/(m_ion))
 
     def h_L(self, n_g, L):
         lambda_i = 1/(n_g * self.SIGMA_I)
@@ -50,7 +50,7 @@ class Chamber(object):
         return 0.8 / np.sqrt(4 + (R / lambda_i))
 
     def maxwellian_flux_speed(self, T, m):
-        return np.sqrt((8 * k * T) / (pi * m))
+        return np.sqrt((8 * e * T) / (pi * m))
 
     def pressure(self, T, Q, v, A_out):
         """Calculates pressure in steady state without any plasma.
