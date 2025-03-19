@@ -64,7 +64,7 @@ class Chamber(object):
         ''' ion loss effective surface'''
         return (2 * self.h_R(n_g, R) * pi * R * L) + (2 * self.h_L(n_g, L) * pi * R**2)
 
-    def S_eff_1(self, n_g, R, L, beta_i):
+    def S_eff_1(self, n_g, R, L):
         ''' Ion recycling effective area : ions are recycled into the chamber as neutrals'''
         return 2 * self.h_R(n_g, R) * pi * R * L + (2 - beta_i) * self.h_L(n_g, L) * pi * R**2
 
