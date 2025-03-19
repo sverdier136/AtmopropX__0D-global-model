@@ -56,11 +56,12 @@ class FluxToWallsAndThroughGrids(Reaction):
         rate[0] = - E_kin * self.chamber.gamma_e(state[0], state[self.species.nb]) * S_eff / V_chamber
 
 
-        # * Neglected for now because missing energy of ion
-        # for sp in self.species.species[1:] :   # electron are skipped because handled before
-        #     if sp.charge != 0:
-        #         rate[sp.index] = - self.chamber.gamma_ion(state[sp.index], state[self.species.nb + sp.nb_atoms]) * S_ion / V_chamber
-        #     else:
-        #         rate[sp.index]
+        # * NOT neglected for now because missing energy of ion
+
+        for sp in self.species.species[1:] :   # electron are skipped because handled before
+            if sp.charge != 0:
+                rate[sp.nb_atoms] = - self.chamber.gamma_ion(state[sp.index], state[self.species.nb + sp.nb_atoms]) * S_ion / V_chamber
+            else:
+                rate[sp.nb_atoms] = - self.chamber.gamma_neutrals(state[sp.index], state[self.species.nb + sp.nb_atoms]) * S_neutrals / V_chamber
 
         return rate
