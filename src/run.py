@@ -4,31 +4,34 @@ from scipy.constants import k, e, pi
 from src.model import GlobalModel
 from src.config import config_dict
 from src.chamber_caracteristics import Chamber
+from src.reaction_set_N_et_O import species_list, reactions_list
 
 
 print("start")
 
 if __name__ == "__main__":
     chamber = Chamber(config_dict)
-    model = GlobalModel()
+    model = GlobalModel(species_list, reactions_list, chamber)
 
     # Solve for several values of I_coil
 
     I_coil = np.linspace(1, 40, 20)
-    p, s = model.solve_for_I_coil(I_coil)
+    powers, final_states = model.solve_for_I_coil(I_coil)
 
-    T_e = s[:, 0]
-    T_g = s[:, 1]
-    n_e = s[:, 2]
-    n_g = s[:, 3]
+    n_e = final_states[:, 0]
+    n_Xe = final_states[:, 1]
+    n_Xe_plus = final_states[:, 2]
+    T_e = final_states[:, 3]
+    T_mono = final_states[:, 4]
+    T_dia = final_states[:, 5]
 
     print("plot start")
 
-    thrust = model.eval_property(model.thrust_i, s)
-    j_i = model.eval_property(model.j_i, s)
+    thrust = model.eval_property(model.thrust_i, final_states)
+    j_i = model.eval_property(model.j_i, final_states)
     plt.ylim(0, 200)
     plt.xlim(0, 1600)
-    plt.plot(p, j_i)
+    plt.plot(powers, j_i)
     plt.title("Current density as function of power in the coil")
     plt.show(block=False)
     print("thruster plot")
@@ -38,8 +41,8 @@ if __name__ == "__main__":
 
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
-    ax2.plot(p, T_e * k / e, 'g-')
-    ax1.plot(p, T_g, 'b-')
+    ax2.plot(powers, T_e * k / e, 'g-')
+    ax1.plot(powers, T_mono, 'b-')
 
     ax1.set_xlabel('$P_{RF}$ [W]')
     ax2.set_ylabel('$T_e$ [eV]', color='g')
@@ -56,12 +59,12 @@ if __name__ == "__main__":
 
     # Density plot
     plt.xlim((0, 1600))
-    plt.semilogy(p, n_e, label='$n_e$')
-    plt.semilogy(p, n_g, label='$n_g$')
+    plt.semilogy(powers, n_e, label='$n_e$')
+    plt.semilogy(powers, n_Xe, label='$n_g$')
     plt.xlabel('n [$m^{-3}$]')
     plt.xlabel('$P_{RF}$ [W]')
     plt.legend()
     plt.title("Gas and electron (aka ion) density as function of power")
     plt.show()
-    print("desity plot")
+    print("density plot")
 
