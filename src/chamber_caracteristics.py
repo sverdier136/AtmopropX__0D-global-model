@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e, N_A
 from scipy.special import jv
-
+from src.specie import Specie, Species
 
 # ! A check pour formules 
 # ! + adapter code a la nouvelle version : variable désormais attributs de classe => self....
@@ -69,9 +69,8 @@ class Chamber(object):
         return 2 * self.h_R(n_g, R) * pi * R * L + (2 - beta_i) * self.h_L(n_g, L) * pi * R**2
 
 
-    def gamma_ion(self, n_ion, T_e):
-        #m_ion needs to be defined
-        return self.h_L(n_ion, L) * n_ion * self.u_B(T_e, m_ion)
+    def gamma_ion(self, n_ion, T_e , specie):
+        return self.h_L(n_ion, L) * n_ion * self.u_B(T_e, specie.mass)
 
     def gamma_e(self, n_e, T_e):
         return 0.25*n_e * self.maxwellian_flux_speed(T_e, m_e)
