@@ -60,11 +60,11 @@ class Chamber(object):
         A_out : Effective area for which the gas can leave the chamber"""
         return (4 * k * T * Q) / (v * A_out)
 
-    def S_eff(self, n_g, R, L):
+    def S_eff_total_ion(self, n_g, R, L):
         ''' ion loss effective surface'''
         return (2 * self.h_R(n_g, R) * pi * R * L) + (2 * self.h_L(n_g, L) * pi * R**2)
 
-    def S_eff_1(self, n_g, R, L):
+    def S_eff_total_ion_neutrelisation(self, n_g, R, L):
         ''' Ion recycling effective area : ions are recycled into the chamber as neutrals'''
         return 2 * self.h_R(n_g, R) * pi * R * L + (2 - beta_i) * self.h_L(n_g, L) * pi * R**2
 
