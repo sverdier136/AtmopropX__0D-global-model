@@ -43,7 +43,7 @@ class GlobalModel:
             collision_frequencies : np.array containing the collision frequencies for each specie in the order in which they appear in self.species"""
         #fonction utilisée dans f_dy
         normalized_c = self.normalised_concentrations(state)
-        omega_pe_sq = (state[0] * e**2) / (self.species.species[0].mass * eps_0)
+        omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
         epsilons_i = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  collision_frequencies))
 
         def equation(x):            
