@@ -60,17 +60,14 @@ class Chamber(object):
         A_out : Effective area for which the gas can leave the chamber"""
         return (4 * k * T * Q) / (v * A_out)
 
-    def A_eff(self, n_g, R, L):
+    def S_eff(self, n_g, R, L):
+        ''' ion loss effective surface'''
         return (2 * self.h_R(n_g, R) * pi * R * L) + (2 * self.h_L(n_g, L) * pi * R**2)
 
-    def A_eff_1(self, n_g, R, L, beta_i):
+    def S_eff_1(self, n_g, R, L, beta_i):
+        ''' Ion recycling effective area : ions are recycled into the chamber as neutrals'''
         return 2 * self.h_R(n_g, R) * pi * R * L + (2 - beta_i) * self.h_L(n_g, L) * pi * R**2
 
-    def eps_p(self, omega, n_e, n_g, K_el):
-        '''This function is not useful in the current disposition of the code : eps_p is calculated with f_dy from model.py, using geteps from elastic_collision_with_electron '''
-        omega_pe_sq = (n_e * e**2) / (m_e * eps_0)
-        nu_m_i = 1j * K_el * n_g
-        return 1 - (omega_pe_sq / (omega * (omega -  nu_m_i)))
 
     def gamma_ion(self, n_ion, T_e):
         #m_ion needs to be defined
