@@ -3,11 +3,14 @@ import numpy as np
 from scipy.constants import k, e, pi
 from src.model import GlobalModel
 from src.config import config_dict
+from src.chamber_caracteristics import Chamber
+
 
 print("start")
 
 if __name__ == "__main__":
-    model = GlobalModel(config_dict)
+    chamber = Chamber(config_dict)
+    model = GlobalModel()
 
     # Solve for several values of I_coil
 
