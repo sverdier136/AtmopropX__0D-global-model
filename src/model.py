@@ -70,14 +70,8 @@ class GlobalModel:
                 collision_frequencies[sp_idx] = freq
         eps_p = self.eps_p(collision_frequencies, state)
 
-        # calculation of R_ind with intermediary steps
-        k_p = (omega / c) * np.sqrt(eps_p)
-        a = 2 * pi * N**2 / (L * omega * eps_0)
-        #jv are Besel functions
-        b = 1j * k_p * R * jv(1, k_p * R) / (eps_p * jv(0, k_p * R))
-        R_ind = a * np.real(b)
-        #deducing P_abs from R_ind
-        P_abs = R_ind* self.I_coil**2 / 2
+        # calculation of P_abs : the power given by the antenna to the plasma
+        Power = self.P_abs(R_ind(omega , eps_p , c , N_turns_of_coil))
 
         # Energy given to the electrons via the coil
         dy_energies[0] += self.P_abs(state)
@@ -96,7 +90,17 @@ class GlobalModel:
         dy[self.species.nb:] = dy_temp
 
         return dy
-    
+    def R_ind(omega , eps_p , c , N_turns_of_coil) :
+        '''plamsma resistance, used in calculating the power P_abs'''
+        k_p = (omega / c) * np.sqrt(eps_p)
+        a = 2 * pi * N_turns_of_coil**2 / (L * omega * eps_0)
+        #jv are Besel functions
+        b = 1j * k_p * chamber.R * jv(1, k_p * R) / (eps_p * jv(0, k_p * R))
+        R_ind = a * np.real(b)
+
+    def P_abs(self , R_ind):
+        return R_ind* self.I_coil**2 / 2
+        
     def thrust_i(self, T_e, n_e, n_ion):
         """Thrust produced by the ion beam of one specie"""
         return self.chamber.gamma_ion(n_ion, T_e, L) * self.m_i * self.v_beam * self.A_i
