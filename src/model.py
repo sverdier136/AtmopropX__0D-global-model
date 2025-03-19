@@ -97,7 +97,30 @@ class GlobalModel:
 
         return dy
     
+    def thrust_i(self, T_e, n_e, n_ion):
+        """Thrust produced by the ion beam of one specie"""
+        return self.chamber.gamma_ion(n_ion, T_e, L) * self.m_i * self.v_beam * self.A_i
 
+    def j_i(self, T_e, n_e, n_ion , specie):
+        """Ion current density of one ionic specie extracted by the grids"""
+        return self.chamber.gamma_ion( n_ion, T_e, L) * e * specie.charge
+        
+    def total_ion_thrust(self , state ) :
+        '''Calculates the total amount of thrust generated'''
+        total_thrust = 0
+        for i in(range(1,len(state)/2)):
+            if species[i].charge != 0 :
+                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i])
+        return total_thrust
+
+    def total_ion_current(self , state , species) :
+        '''Calculates the total amount of ion current toxards the grids'''
+        total_current = 0
+        for i in(range(1,len(state)/2)):
+            if species[i].charge != 0 :
+                total_current += self.j_i( state[len(state)/2] , state[0] , state[i] , species[i])
+        return total_current
+        
     def solve(self, t0, tf):
         y0 = np.array([self.T_e_0, self.T_g_0, self.n_e_0, self.n_g_0])
         return solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
