@@ -43,7 +43,7 @@ class GlobalModel:
             collision_frequencies : np.array containing the collision frequencies for each specie in the order in which they appear in self.species"""
         #fonction utilisée dans f_dy
         normalized_c = self.normalised_concentrations(state)
-        omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
+        omega_pe_sq = (state[0] * e**2) / (self.species.species[0].mass * eps_0)
         epsilons_i = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  collision_frequencies))
 
         def equation(x):            
@@ -71,10 +71,10 @@ class GlobalModel:
         eps_p = self.eps_p(collision_frequencies, state)
 
         # calculation of P_abs : the power given by the antenna to the plasma
-        Power = self.P_abs(R_ind(omega , eps_p , c ))
+        power = self.P_abs(R_ind( eps_p  ))
 
         # Energy given to the electrons via the coil
-        dy_energies[0] += self.P_abs(state)
+        dy_energies[0] += power
 
         # total thermal capacity of all species with same number of atoms : sum of (3/2 or 5/2 * density)
         total_thermal_capacity_by_sp_type = np.zeros(3)
@@ -90,20 +90,20 @@ class GlobalModel:
         dy[self.species.nb:] = dy_temp
 
         return dy
-    def R_ind(omega , eps_p , c ) :
+    def R_ind(eps_p) :
         '''plamsma resistance, used in calculating the power P_abs'''
-        k_p = (omega / c) * np.sqrt(eps_p)
-        a = 2 * pi * chamber.N**2 / (L * omega * eps_0)
+        k_p = (self.chamber.omega / c) * np.sqrt(eps_p)
+        a = 2 * pi * elf.chamber.N**2 / (L * self.chamber.omega * eps_0)
         #jv are Besel functions
-        b = 1j * k_p * chamber.R * jv(1, k_p * R) / (eps_p * jv(0, k_p * R))
+        b = 1j * k_p * self.chamber.R * jv(1, k_p * R) / (eps_p * jv(0, k_p * R))
         R_ind = a * np.real(b)
 
     def P_abs(self , R_ind):
-        return R_ind* self.I_coil**2 / 2
-        
+        return R_ind* self.chamber.I_coil**2 / 2
+
     def thrust_i(self, T_e, n_e, n_ion , specie):
         """Thrust produced by the ion beam of one specie"""
-        return self.chamber.gamma_ion(n_ion, T_e , specie) * self.m_i * self.v_beam * self.A_i
+        return self.chamber.gamma_ion(n_ion, T_e , specie) * specie.mass * self.chamber.v_beam(specie) * self.chamber.beta_i * pi * self.chamber.R ** 2
 
     def j_i(self, T_e, n_e, n_ion , specie):
         """Ion current density of one ionic specie extracted by the grids"""
@@ -114,19 +114,19 @@ class GlobalModel:
         total_thrust = 0
         for i in(range(1,len(state)/2)):
             if species[i].charge != 0 :
-                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i] , species[i])
+                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i] , slef.species.species[i])
         return total_thrust
 
-    def total_ion_current(self , state , species) :
+    def total_ion_current(self , state ) :
         '''Calculates the total amount of ion current toxards the grids'''
         total_current = 0
         for i in(range(1,len(state)/2)):
-            if species[i].charge != 0 :
-                total_current += self.j_i( state[len(state)/2] , state[0] , state[i] , species[i])
+            if self.species.species[i].charge != 0 :
+                total_current += self.j_i( state[len(state)/2] , state[0] , state[i] , self.species.species[i])
         return total_current
         
     def solve(self, t0, tf):
-        y0 = np.array([self.T_e_0, self.T_g_0, self.n_e_0, self.n_g_0])
+        y0 = np.array([self.chamber.T_e_0, self.chamber.T_g_0, self.chamber.n_e_0, self.chamber.n_g_0])
         return solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
 
 
@@ -138,13 +138,23 @@ class GlobalModel:
         solution = np.zeros((I_coil.shape[0], 4))  #shape = (y,x)
 
         for i, I in enumerate(I_coil):
-            self.I_coil = I
+            self.chamber.I_coil = I
 
             sol = self.solve(0, 5e-2)    # TODO Needs some testing
 
             final_state = sol.y[:, -1]
 
-            p[i] = self.P_rf(final_state)
+            for reac in self.reaction_set:
+                dy_densities += reac.density_change_rate(state)
+                dy_energies += reac.energy_change_rate(state)
+                if isinstance(reac, GeneralElasticCollision) :
+                    sp_idx, freq = reac.colliding_specie_and_collision_frequency(state)
+                    collision_frequencies[sp_idx] = freq
+            eps_p = self.eps_p(collision_frequencies, state)
+
+            # calculation of P_abs : the power given by the antenna to the plasma
+
+            p[i] = self.P_abs(R_ind(eps_p))
 
             solution[i] = final_state
             
