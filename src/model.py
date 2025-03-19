@@ -71,7 +71,7 @@ class GlobalModel:
         eps_p = self.eps_p(collision_frequencies, state)
 
         # calculation of P_abs : the power given by the antenna to the plasma
-        Power = self.P_abs(R_ind(omega , eps_p , c , N_turns_of_coil))
+        Power = self.P_abs(R_ind(omega , eps_p , c ))
 
         # Energy given to the electrons via the coil
         dy_energies[0] += self.P_abs(state)
@@ -90,10 +90,10 @@ class GlobalModel:
         dy[self.species.nb:] = dy_temp
 
         return dy
-    def R_ind(omega , eps_p , c , N_turns_of_coil) :
+    def R_ind(omega , eps_p , c ) :
         '''plamsma resistance, used in calculating the power P_abs'''
         k_p = (omega / c) * np.sqrt(eps_p)
-        a = 2 * pi * N_turns_of_coil**2 / (L * omega * eps_0)
+        a = 2 * pi * chamber.N**2 / (L * omega * eps_0)
         #jv are Besel functions
         b = 1j * k_p * chamber.R * jv(1, k_p * R) / (eps_p * jv(0, k_p * R))
         R_ind = a * np.real(b)
