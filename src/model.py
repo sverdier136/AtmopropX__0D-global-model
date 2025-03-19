@@ -101,20 +101,20 @@ class GlobalModel:
     def P_abs(self , R_ind):
         return R_ind* self.I_coil**2 / 2
         
-    def thrust_i(self, T_e, n_e, n_ion):
+    def thrust_i(self, T_e, n_e, n_ion , specie):
         """Thrust produced by the ion beam of one specie"""
-        return self.chamber.gamma_ion(n_ion, T_e, L) * self.m_i * self.v_beam * self.A_i
+        return self.chamber.gamma_ion(n_ion, T_e , specie) * self.m_i * self.v_beam * self.A_i
 
     def j_i(self, T_e, n_e, n_ion , specie):
         """Ion current density of one ionic specie extracted by the grids"""
-        return self.chamber.gamma_ion( n_ion, T_e, L) * e * specie.charge
+        return self.chamber.gamma_ion( n_ion, T_e, specie) * e * specie.charge
         
     def total_ion_thrust(self , state ) :
         '''Calculates the total amount of thrust generated'''
         total_thrust = 0
         for i in(range(1,len(state)/2)):
             if species[i].charge != 0 :
-                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i])
+                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i] , species[i])
         return total_thrust
 
     def total_ion_current(self , state , species) :
