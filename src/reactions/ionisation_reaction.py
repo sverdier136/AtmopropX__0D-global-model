@@ -8,7 +8,7 @@ from src.reactions.reaction import Reaction
 from src.chamber_caracteristics import Chamber
 
 
-# * To be checked
+# * Checked by me
 
 class Ionisation(Reaction):
     """
