@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e
+from src.reactions import Reaction, ElasticCollisionWithElectron, Ionisation, Excitation, GasInjection 
+from src.specie import Species, Specie
+from src.constant_rate_calculation import get_K_func
+
 
 species_list = Species([Specie("e", m_e, -e), Specie("N_2", 4.65e-26, 0), Specie("N", 2.33e-26, 0), Specie("N_2+", 4.65e-26, e), Specie("N+", 2.33e-26, e), Specie("O_2+", 5.31e-26, e), Specie("O_2", 5.31e-26, 0), Specie("O", 2.67e-26, 0), Specie("O+", 2.67e-26, e)])
 
@@ -42,6 +46,6 @@ exc6_O = Reaction(species_list, ["O"], ["O"], get_K_func(species_list, "O", "exc
 exc7_O = Reaction(species_list, ["O"], ["O"], get_K_func(species_list, "O", "exc7_O"), 12, [1., 1.])
 exc8_O = Reaction(species_list, ["O"], ["O"], get_K_func(species_list, "O", "exc8_O"), 12, [1., 1.])
 exc9_O = Reaction(species_list, ["O"], ["O"], get_K_func(species_list, "O", "exc9_O"), 12, [1., 1.])
-ela_O = ElastoicCollisionWithElectron(species_list, ["O"], get_K_func(species_list, "O", "ela_O"), 0)
+ela_O = ElasticCollisionWithElectron(species_list, ["O"], get_K_func(species_list, "O", "ela_O"), 0)
 
 
