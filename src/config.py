@@ -12,7 +12,6 @@ config_dict = {
         's': 1e-3,
         
         # Neutral flow
-        'm_i': 2.18e-25,
         'Q_g': 1.2e19,
         'beta_g': 0.3,
         'kappa': 0.0057,
