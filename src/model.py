@@ -1,9 +1,10 @@
 import numpy as np 
 from numpy.typing import NDArray
-from scipy.constants import m_e, e, pi, k, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
+from scipy.constants import m_e, e, pi, k, epsilon_0 as eps_0, mu_0, c as c_light   # k is k_B -> Boltzmann constant
 from scipy.integrate import trapezoid, solve_ivp, odeint
 from scipy.interpolate import interp1d
 from scipy.optimize import fsolve
+from scipy.special import jv
 
 #Local modules
 from src.util import load_csv, load_cross_section
@@ -72,7 +73,7 @@ class GlobalModel:
         eps_p = self.eps_p(collision_frequencies, state)
 
         # calculation of P_abs : the power given by the antenna to the plasma
-        power = self.P_abs(R_ind( eps_p  ))
+        power = self.P_abs(self.R_ind( eps_p  ))
 
         # Energy given to the electrons via the coil
         dy_energies[0] += power
@@ -91,13 +92,14 @@ class GlobalModel:
         dy[self.species.nb:] = dy_temp
 
         return dy
-    def R_ind(eps_p) :
+    
+    def R_ind(self, eps_p):
         '''plamsma resistance, used in calculating the power P_abs'''
-        k_p = (self.chamber.omega / c) * np.sqrt(eps_p)
-        a = 2 * pi * elf.chamber.N**2 / (L * self.chamber.omega * eps_0)
+        k_p = (self.chamber.omega / c_light) * np.sqrt(eps_p)
+        a = 2 * pi * self.chamber.N**2 / (self.L * self.chamber.omega * eps_0)
         #jv are Besel functions
-        b = 1j * k_p * self.chamber.R * jv(1, k_p * R) / (eps_p * jv(0, k_p * R))
-        R_ind = a * np.real(b)
+        b = 1j * k_p * self.chamber.R * jv(1, k_p * self.chamber.R) / (eps_p * jv(0, k_p * self.chamber.R))
+        return a * np.real(b)
 
     def P_abs(self , R_ind):
         return R_ind* self.chamber.I_coil**2 / 2
@@ -108,14 +110,14 @@ class GlobalModel:
 
     def j_i(self, T_e, n_e, n_ion , specie):
         """Ion current density of one ionic specie extracted by the grids"""
-        return self.chamber.gamma_ion( n_ion, T_e, specie) * e * specie.charge
+        return self.chamber.gamma_ion(n_ion, T_e, specie) * e * specie.charge
         
     def total_ion_thrust(self , state ) :
         '''Calculates the total amount of thrust generated'''
         total_thrust = 0
         for i in(range(1,len(state)/2)):
-            if species[i].charge != 0 :
-                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i] , slef.species.species[i])
+            if self.species[i].charge != 0 :
+                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i] , self.species.species[i])
         return total_thrust
 
     def total_ion_current(self , state ) :
@@ -131,15 +133,15 @@ class GlobalModel:
         return solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
 
 
-    def solve_for_I_coil(self, I_coil):
+    def solve_for_I_coil(self, coil_currents):
         """Calculates for a list of intensity in the coil the resulting power consumption and the resulting thrust.
             ## Returns
             power_array , list_of(`state` after long time)"""
-        power_array = np.zeros(I_coil.shape[0])
-        final_states = np.zeros((I_coil.shape[0], 4))  #shape = (y,x)
+        power_array = np.zeros(coil_currents.shape[0])
+        final_states = np.zeros((coil_currents.shape[0], 4))  #shape = (y,x)
 
-        for i, I in enumerate(I_coil):
-            self.chamber.I_coil = I
+        for i, I_coil in enumerate(coil_currents):
+            self.chamber.I_coil = I_coil
 
             sol = self.solve(0, 5e-2)    # TODO Needs some testing
 
