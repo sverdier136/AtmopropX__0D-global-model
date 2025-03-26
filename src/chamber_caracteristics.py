@@ -57,6 +57,10 @@ class Chamber(object):
     def maxwellian_flux_speed(self, T, m):
         return np.sqrt((8 * e * T) / (pi * m))
 
+    def v_beam(self , m_ion , charge) :
+        '''beam speed on an ion going through the grids'''
+        return np.sqrt((2*charge*self.V_grid)/m_ion)
+
     def pressure(self, T, v, A_out):
         """Calculates pressure in steady state without any plasma.
         T : Temperature in steady state
