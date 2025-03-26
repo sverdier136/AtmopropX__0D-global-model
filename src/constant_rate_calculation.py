@@ -5,8 +5,7 @@ from scipy.integrate import trapezoid, solve_ivp, odeint
 #Local modules
 from util import load_csv, load_cross_section
 #from auxiliary_funcs import pressure, maxwellian_flux_speed, u_B, A_eff, A_eff_1, SIGMA_I, R_ind, h_L
-from specie import Specie, Species
-from reaction import Reaction
+from src.specie import Specie, Species
 
 def rate_constant(T_e, E, cs, m):
     """Calculates a reaction rate constant """

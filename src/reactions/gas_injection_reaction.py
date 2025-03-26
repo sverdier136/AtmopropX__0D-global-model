@@ -17,7 +17,7 @@ class GasInjection(Reaction):
     Represents the gas injection : adds quantity to ne, ...
     """
 
-    def __init__(self, species: Species, injection_rates: NDArray[np.float], T_injection: float, chamber: Chamber):
+    def __init__(self, species: Species, injection_rates: NDArray[np.float64], T_injection: float, chamber: Chamber):
         """
         Dissociation class
             Inputs : 

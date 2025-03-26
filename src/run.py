@@ -4,7 +4,7 @@ from scipy.constants import k, e, pi
 from src.model import GlobalModel
 from src.config import config_dict
 from src.chamber_caracteristics import Chamber
-from src.reaction_set_N_et_O import species_list, reactions_list
+from src.reaction_set_Xe import species_list, reactions_list
 
 
 print("start")

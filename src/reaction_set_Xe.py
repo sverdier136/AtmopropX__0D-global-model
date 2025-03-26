@@ -25,7 +25,7 @@ rec_Xe = FluxToWallsAndThroughGrids(species, "Xe+", get_K_func(species, "Xe+", "
 out_Xe = FluxToWallsAndThroughGrids(species, "Xe", get_K_func(species, "Xe", "out_Xe"), 0) 
 
 ### Sortie de Xe+ à travers les grilles
-out_Xe+ = FluxToWallsAndThroughGrids(species, "Xe+", get_K_func(species, "Xe+", "out_Xe+"), 0) 
+out_Xe_plus = FluxToWallsAndThroughGrids(species, "Xe+", get_K_func(species, "Xe+", "out_Xe+"), 0) 
 
 ### Choc élastique électron-neutre
 ela_elec_Xe = ElasticCollisionWithElectron(species, "Xe", get_K_func(species, "Xe", "ela_elec_Xe"), 0) 
@@ -36,4 +36,4 @@ ela_elec_Xe = ElasticCollisionWithElectron(species, "Xe", get_K_func(species, "X
 ### Diffusion thermique vers les parois  --> on avait trouvé par un savant calcul d'ODG que c'est négligeable
 
 # Reaction list
-reaction_list = [ion_Xe, exc_Xe, src_Xe, rec_Xe, out_Xe, out_Xe+, ela_elec_Xe]
+reaction_list = [ion_Xe, exc_Xe, src_Xe, rec_Xe, out_Xe, out_Xe_plus, ela_elec_Xe]
