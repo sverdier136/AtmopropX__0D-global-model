@@ -125,6 +125,14 @@ class GlobalModel:
             if self.species.species[i].charge != 0 :
                 total_current += self.j_i( state[len(state)/2] , state[0] , state[i] , self.species.species[i])
         return total_current
+
+    def n_g (self, state) :
+        '''total density of neutral gases'''
+        for i in(range(len(state)/2)) :
+            total = 0
+            if self.specie.charge(self.species.species[i]) == 0:
+                total += state[i]
+        return total
         
     def solve(self, t0, tf):
         y0 = np.array([self.chamber.T_e_0, self.chamber.T_g_0, self.chamber.n_e_0, self.chamber.n_g_0])
