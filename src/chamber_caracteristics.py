@@ -86,8 +86,6 @@ class Chamber(object):
     def gamma_ion(self, n_ion, T_e , m_ion):
         return self.h_L(n_ion) * n_ion * self.u_B(T_e, m_ion)
 
-    def gamma_e(self, n_e, T_e):
-        return 0.25*n_e * self.maxwellian_flux_speed(T_e, m_e)  # TODO : elle sort d'où cette formule, elle est pas sur le latex...
 
     def gamma_neutral(self, n_neutral, T_neutral, m_neutral):
         return n_neutral*np.sqrt(8*e*T_neutral/(pi*N_A*m_neutral))/4
