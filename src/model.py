@@ -48,9 +48,12 @@ class GlobalModel:
         omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
         epsilons_i = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*collision_frequencies))
 
-        def equation(x):            
-            return np.sum(normalized_c*(epsilons_i-1)/(epsilons_i + 2*x)) + (1-x)/(3*x)
-        return fsolve(equation , 1)
+        def equation(x):
+            x = x[0] + x[1]*1j     
+            value = np.sum(normalized_c*(epsilons_i-1)/(epsilons_i + 2*x)) + (1-x)/(3*x)   
+            return [np.real(value), np.imag(value)]
+        eps_p = fsolve(equation , [1, 0.01])
+        return eps_p[0]+eps_p[1]*1j
 
     
     def f_dy(self, t, state):
