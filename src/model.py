@@ -128,9 +128,9 @@ class GlobalModel:
 
     def n_g (self, state) :
         '''total density of neutral gases'''
+        total = 0
         for i in(range(len(state)/2)) :
-            total = 0
-            if self.specie.charge(self.species.species[i]) == 0:
+            if self.specie.charge(self.species.species[i]) == 0 :
                 total += state[i]
         return total
         
