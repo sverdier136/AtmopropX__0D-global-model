@@ -23,6 +23,7 @@ class GlobalModel:
                 reaction_set : list with all reactions being considered -> [Reaction]"""
         self.species = species
         self.reaction_set = reaction_set
+        self.chamber = chamber
     
 
 
@@ -134,8 +135,8 @@ class GlobalModel:
         """Calculates for a list of intensity in the coil the resulting power consumption and the resulting thrust.
             ## Returns
             power_array , list_of(`state` after long time)"""
-        p = np.zeros(I_coil.shape[0])
-        solution = np.zeros((I_coil.shape[0], 4))  #shape = (y,x)
+        power_array = np.zeros(I_coil.shape[0])
+        final_states = np.zeros((I_coil.shape[0], 4))  #shape = (y,x)
 
         for i, I in enumerate(I_coil):
             self.chamber.I_coil = I
@@ -144,18 +145,17 @@ class GlobalModel:
 
             final_state = sol.y[:, -1]
 
+            collision_frequencies = np.zeros(self.species.nb)
             for reac in self.reaction_set:
-                dy_densities += reac.density_change_rate(state)
-                dy_energies += reac.energy_change_rate(state)
                 if isinstance(reac, GeneralElasticCollision) :
-                    sp_idx, freq = reac.colliding_specie_and_collision_frequency(state)
+                    sp_idx, freq = reac.colliding_specie_and_collision_frequency(final_state)
                     collision_frequencies[sp_idx] = freq
-            eps_p = self.eps_p(collision_frequencies, state)
+            eps_p = self.eps_p(collision_frequencies, final_state)
 
             # calculation of P_abs : the power given by the antenna to the plasma
 
-            p[i] = self.P_abs(R_ind(eps_p))
+            power_array[i] = self.P_abs(self.R_ind(eps_p))
 
-            solution[i] = final_state
+            final_states[i] = final_state
             
-        return p, solution
+        return power_array, final_states

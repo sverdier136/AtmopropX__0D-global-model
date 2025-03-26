@@ -9,6 +9,7 @@ from src.reactions.reaction import Reaction
 
 
 # ! En cours
+# ! NOn necessaire
 
 
 class ElasticCollisionWithElectron(Reaction):
