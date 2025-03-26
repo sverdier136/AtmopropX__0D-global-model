@@ -46,7 +46,7 @@ class GlobalModel:
         #fonction utilisée dans f_dy
         normalized_c = self.normalised_concentrations(state)
         omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
-        epsilons_i = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  collision_frequencies))
+        epsilons_i = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*collision_frequencies))
 
         def equation(x):            
             return np.sum(normalized_c*(epsilons_i-1)/(epsilons_i + 2*x)) + (1-x)/(3*x)
