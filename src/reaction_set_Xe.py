@@ -4,6 +4,8 @@ from src.reactions.ionisation_reaction import Ionisation
 from src.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
 from src.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
 from src.reactions.gas_injection_reaction import GasInjection
+from src.specie import Species, Specie
+from src.constant_rate_calculation import get_K_func
                  
 species = Species([Specie("e", m_e, -e), Specie("Xe", 2.18e-25, 0), Specie("Xe+", 2.18e-25, e)])
 

@@ -11,6 +11,8 @@ from src.reactions.ionisation_reaction import Ionisation
 from src.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
 from src.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
 from src.reactions.gas_injection_reaction import GasInjection
+from src.specie import Species, Specie
+from src.constant_rate_calculation import get_K_func
 
 species_list = Species([Specie("e", m_e, -e), Specie("N_2", 4.65e-26, 0), Specie("N", 2.33e-26, 0), Specie("N_2+", 4.65e-26, e), Specie("N+", 2.33e-26, e), Specie("O_2+", 5.31e-26, e), Specie("O_2", 5.31e-26, 0), Specie("O", 2.67e-26, 0), Specie("O+", 2.67e-26, e)])
 
