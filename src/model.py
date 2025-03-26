@@ -69,7 +69,7 @@ class GlobalModel:
             dy_energies += reac.energy_change_rate(state)
             if isinstance(reac, GeneralElasticCollision) :
                 sp_idx, freq = reac.colliding_specie_and_collision_frequency(state)
-                collision_frequencies[sp_idx] = freq
+                collision_frequencies[sp_idx] += freq
         eps_p = self.eps_p(collision_frequencies, state)
 
         # calculation of P_abs : the power given by the antenna to the plasma
