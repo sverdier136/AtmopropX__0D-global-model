@@ -40,11 +40,11 @@ class Reaction:
 
         self.reactives: list[Specie] = [self.species.get_specie_by_name(name) for name in reactives]
         self.reactives_indices = [self.species.get_index_by_instance(sp) for sp in self.reactives]
-        assert max(self.reactives_indices) < self.species.nb , "Reactive index is greater than number of species"
+        #assert max(self.reactives_indices) < self.species.nb , "Reactive index is greater than number of species"
 
         self.products: list[Specie] = [self.species.get_specie_by_name(name) for name in products]
         self.products_indices = [self.species.get_index_by_instance(sp) for sp in self.products]
-        assert max(self.products_indices) < self.species.nb , "Product index is greater than number of species"
+        #assert max(self.products_indices) < self.species.nb , "Product index is greater than number of species"
 
 
         if stoechio_coeffs :

@@ -59,13 +59,13 @@ class FluxToWallsAndThroughGrids(Reaction):
 
         E_kin = 7*e*state[self.species.nb]
 
-        gamma_e = 0
+        
         n_g = 0
         for i in(range(len(state)/2)) :
             if self.specie.charge(self.species.species[i]) == 0:
                 n_g += state[i]
         # * NOT neglected for now because missing energy of ion
-
+        gamma_e = 0
         for sp in self.species.species[1:] :   # electron are skipped because handled before
             if sp.charge != 0:
                 gamma_e += self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass)

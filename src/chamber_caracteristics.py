@@ -13,10 +13,12 @@ class Chamber(object):
         # Geometry
         self.R      = config_dict["R"]
         self.L      = config_dict["L"]
+        self.V_chamber = pi * self.R**2 * self.L
         self.s      = config_dict["s"]
         self.S_grid = pi * self.R**2
         self.S_walls = pi * self.R * self.L
         self.S_total = 2 * self.S_grid + self.S_walls
+        
 
         # Neutral flow
         self.Q_g    = config_dict["Q_g"]
@@ -38,6 +40,8 @@ class Chamber(object):
         self.T_e_0  = config_dict["T_e_0"]
         self.n_e_0  = config_dict["n_e_0"]
         self.T_g_0  = config_dict["T_g_0"]
+        self.n_g_0  = config_dict["n_e_0"]
+
 
     
     

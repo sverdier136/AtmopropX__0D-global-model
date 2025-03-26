@@ -28,12 +28,12 @@ class GasInjection(Reaction):
         """
         species_injected_names = [species.names[i] for i in range(species.nb) if injection_rates[i] != 0]
         super().__init__(species, [], species_injected_names, chamber)
-        self.injection_rates = injection_rates
+        self.injection_rates = np.array(injection_rates)
         self.T_injection = T_injection
 
     @override
     def density_change_rate(self, state):
-        return self.injection_rates / self.chamber.V_chamber 
+        return self.injection_rates #/ self.chamber.V_chamber 
 
     
     @override

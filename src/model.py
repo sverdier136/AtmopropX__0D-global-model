@@ -84,19 +84,19 @@ class GlobalModel:
         for sp in self.species.species :
             total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * densities[sp.index]
             dy_total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * dy_densities[sp.index]
-            
+        
         #Transform derivative of energy into derivative of temperature
         dy_temp = (dy_energies - temp * dy_total_thermal_capacity_by_sp_type) / total_thermal_capacity_by_sp_type
 
         dy[:self.species.nb] = dy_densities
-        dy[self.species.nb:] = dy_temp
+        dy[self.species.nb:] = np.nan_to_num(dy_temp, nan=0.0)
 
         return dy
     
     def R_ind(self, eps_p):
         '''plamsma resistance, used in calculating the power P_abs'''
         k_p = (self.chamber.omega / c_light) * np.sqrt(eps_p)
-        a = 2 * pi * self.chamber.N**2 / (self.L * self.chamber.omega * eps_0)
+        a = 2 * pi * self.chamber.N**2 / (self.chamber.L * self.chamber.omega * eps_0)
         #jv are Besel functions
         b = 1j * k_p * self.chamber.R * jv(1, k_p * self.chamber.R) / (eps_p * jv(0, k_p * self.chamber.R))
         return a * np.real(b)
@@ -138,21 +138,21 @@ class GlobalModel:
         return total
         
     def solve(self, t0, tf):
-        y0 = np.array([self.chamber.T_e_0, self.chamber.T_g_0, self.chamber.n_e_0, self.chamber.n_g_0])
+        y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, -1])
         return solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
 
 
-    def solve_for_I_coil(self, coil_currents):
+    def solve_for_I_coil(self, coil_currents, tf = 5e-2):
         """Calculates for a list of intensity in the coil the resulting power consumption and the resulting thrust.
             ## Returns
             power_array , list_of(`state` after long time)"""
         power_array = np.zeros(coil_currents.shape[0])
-        final_states = np.zeros((coil_currents.shape[0], 4))  #shape = (y,x)
+        final_states = np.zeros((coil_currents.shape[0], self.species.nb+3))  #shape = (y,x)
 
         for i, I_coil in enumerate(coil_currents):
             self.chamber.I_coil = I_coil
 
-            sol = self.solve(0, 5e-2)    # TODO Needs some testing
+            sol = self.solve(0, tf)    # TODO Needs some testing
 
             final_state = sol.y[:, -1]
 

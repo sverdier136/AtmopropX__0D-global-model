@@ -3,7 +3,7 @@ from scipy.constants import m_e, e, pi, k, epsilon_0 as eps_0, mu_0   # k is k_B
 from scipy.integrate import trapezoid, solve_ivp, odeint
 
 #Local modules
-from util import load_csv, load_cross_section
+from src.util import load_csv, load_cross_section
 #from auxiliary_funcs import pressure, maxwellian_flux_speed, u_B, A_eff, A_eff_1, SIGMA_I, R_ind, h_L
 from src.specie import Specie, Species
 
@@ -23,7 +23,7 @@ def get_K_func(species,specie:str,reaction:str):
     def get_K(state):
         T_e = state[species.nb]
         n_e=state[0]
-        e_r,cs_r=load_cross_section('cross-sections/'+specie+'/'+reaction+'.csv')
+        e_r,cs_r=load_cross_section(".\cross_sections\\"+specie+'\\'+reaction+'.csv')
         k_rate=rate_constant(T_e,e_r,cs_r,m_e) #si on considère que T_e en première approx
         return k_rate 
     return get_K
