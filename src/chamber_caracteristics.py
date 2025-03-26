@@ -40,6 +40,8 @@ class Chamber(object):
         self.T_g_0  = config_dict["T_g_0"]
 
     
+    
+    
     def u_B(self,T_e, m_ion):
         """T_e in eV, m_ion is mass of single ion"""
         return np.sqrt(e*T_e/(m_ion))
