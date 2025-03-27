@@ -5,6 +5,8 @@ from scipy.integrate import trapezoid, solve_ivp, odeint
 from scipy.interpolate import interp1d
 from scipy.optimize import fsolve
 from scipy.special import jv
+import json
+import os
 
 #Local modules
 from src.model_components.util import load_csv, load_cross_section
@@ -14,9 +16,11 @@ from src.model_components.reactions.reaction import Reaction
 from src.model_components.reactions.general_elastic_collision import GeneralElasticCollision
 from src.model_components.chamber_caracteristics import Chamber
 
+log_folder_path = "./logs"
+
 class GlobalModel:
 
-    def __init__(self, species: Species, reaction_set: list[Reaction], chamber: Chamber):
+    def __init__(self, species: Species, reaction_set: list[Reaction], chamber: Chamber, simulation_name: str = "test_simu"):
         """Object simulating the evolution of a plasma with 0D model. 
             Inputs :
                 config_dict : dictionary containing all parameters about the experimental setup
@@ -25,6 +29,8 @@ class GlobalModel:
         self.species = species
         self.reaction_set = reaction_set
         self.chamber = chamber
+        self.simulation_name = simulation_name
+        self.tracked_variables = {}
     
 
 
@@ -80,6 +86,8 @@ class GlobalModel:
 
         # Energy given to the electrons via the coil
         dy_energies[0] += power
+        for i in range(3):
+            self.add_value_to_variable("dy_energy_"+str(i), dy_energies[i])
 
         # total thermal capacity of all species with same number of atoms : sum of (3/2 or 5/2 * density)
         total_thermal_capacity_by_sp_type = np.zeros(3)
@@ -94,6 +102,12 @@ class GlobalModel:
         dy[:self.species.nb] = dy_densities
         dy[self.species.nb:] = np.nan_to_num(dy_temp, nan=0.0)
 
+        self.add_value_to_variable("time", t)
+        self.add_densities_and_temperature(state)
+        self.add_densities_and_temperature(dy, prefix="dy_")
+        self.add_value_to_variable("eps_p_real", np.real(eps_p))
+        self.add_value_to_variable("eps_p_imag", np.imag(eps_p))
+
         return dy
     
     def R_ind(self, eps_p):
@@ -102,7 +116,11 @@ class GlobalModel:
         a = 2 * pi * self.chamber.N**2 / (self.chamber.L * self.chamber.omega * eps_0)
         #jv are Besel functions
         b = 1j * k_p * self.chamber.R * jv(1, k_p * self.chamber.R) / (eps_p * jv(0, k_p * self.chamber.R))
-        return a * np.real(b)
+        R_ind = a * np.real(b)
+        self.add_value_to_variable("R_ind", R_ind)
+        self.add_value_to_variable("R_ind_a", a)
+        self.add_value_to_variable("R_ind_b", np.real(b))
+        return R_ind
 
     def P_abs(self , R_ind):
         return R_ind* self.chamber.I_coil**2 / 2
@@ -142,7 +160,9 @@ class GlobalModel:
         
     def solve(self, t0, tf):
         y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, -1])
-        return solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
+        sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
+        self.save_tracked_variables(self.simulation_name+".json")
+        return sol
 
 
     def solve_for_I_coil(self, coil_currents, tf = 5e-2):
@@ -173,3 +193,21 @@ class GlobalModel:
             final_states[i] = final_state
             
         return power_array, final_states
+    
+    def add_value_to_variable(self, key, value):
+        if key in self.tracked_variables:
+            self.tracked_variables[key].append(value)
+        else:
+            self.tracked_variables[key] = [value]
+
+    def add_densities_and_temperature(self, state, prefix=""):
+        for i, specie in enumerate(self.species.species):
+            self.add_value_to_variable(prefix + specie.name+"_density", state[i])
+        for i, specie in enumerate(self.species.species):
+            self.add_value_to_variable(prefix + specie.name + '_temperature', state[self.species.nb + i])
+
+    def save_tracked_variables(self, log_file='data.json'):
+        """Save in json file"""
+        with open(os.path.join(log_folder_path, log_file), 'w') as file:
+            json.dump(self.tracked_variables, file, indent=4)
+    

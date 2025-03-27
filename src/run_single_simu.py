@@ -35,11 +35,11 @@ ax3 = ax2.twinx()
 
 # Plot temperatures: Electron on primary y-axis, Xenon on secondary y-axis
 ax2.plot(time_points, final_states[species.nb], label='Electron Temp (eV)', color='blue')
-for i, specie in enumerate(species.species[1:]):
-    ax3.plot(time_points, final_states[species.nb + i], linestyle='--', label=specie.name + ' Temp (eV)')
+for i in range(1,3):
+    ax3.plot(time_points, final_states[species.nb + i], linestyle='--', label= f"Molecules with {i} atoms Temp (eV)")
 
 ax2.set_ylabel('Electron Temperature', color='blue')
-ax3.set_ylabel('Atoms Temperature', color='red')
+ax3.set_ylabel('Molecules Temperature', color='red')
 ax2.tick_params(axis='y', labelcolor='blue')
 ax3.tick_params(axis='y', labelcolor='red')
 

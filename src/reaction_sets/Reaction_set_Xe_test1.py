@@ -18,7 +18,7 @@ def get_species_and_reactions(chamber):
     #exc_Xe = Excitation(species, "Xe", get_K_func(species, "Xe", "exc_Xe"), 11.6, chamber) 
 
     ### Terme source
-    src_Xe = GasInjection(species, [0.0, 1.2e19, 2.0e19], 500, chamber) 
+    src_Xe = GasInjection(species, [0.0, 1.2e19, 0], 10000, chamber) 
 
     ### Sortie de Xe à travers les grilles
     #out_Xe = FluxToWallsAndThroughGrids(species, "Xe", get_K_func(species, "Xe", "out_Xe"), 0, chamber) 
