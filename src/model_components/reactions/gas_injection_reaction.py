@@ -3,10 +3,10 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
 
-from src.specie import Specie, Species
-from src.reactions.reaction import Reaction
+from src.model_components.specie import Specie, Species
+from src.model_components.reactions.reaction import Reaction
 from src.config import *
-from src.chamber_caracteristics import Chamber
+from src.model_components.chamber_caracteristics import Chamber
 
 
 # * OK ! Vérif par Liam
@@ -41,6 +41,6 @@ class GasInjection(Reaction):
         rate = np.zeros(3)
 
         for sp in self.products:
-            rate[sp.nb_atoms] += 3/2 * self.injection_rates[sp.index] / self.chamber.V_chamber * self.T_injection
+            rate[sp.nb_atoms] += 3/2 * self.injection_rates[sp.index] / self.chamber.V_chamber * e * self.T_injection
 
         return rate

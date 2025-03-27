@@ -6,13 +6,13 @@ Created on Wed Jan  8 14:41:30 2025
 """
 
 from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e
-from src.reactions.excitation_reaction import Excitation
-from src.reactions.ionisation_reaction import Ionisation
-from src.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
-from src.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
-from src.reactions.gas_injection_reaction import GasInjection
-from src.specie import Species, Specie
-from src.constant_rate_calculation import get_K_func
+from src.model_components.reactions.excitation_reaction import Excitation
+from src.model_components.reactions.ionisation_reaction import Ionisation
+from src.model_components.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
+from src.model_components.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
+from src.model_components.reactions.gas_injection_reaction import GasInjection
+from src.model_components.specie import Species, Specie
+from src.model_components.constant_rate_calculation import get_K_func
 
 def get_species_and_reactions(chamber):
     

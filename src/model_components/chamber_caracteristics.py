@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e, N_A
 from scipy.special import jv
-from src.specie import Specie, Species
+from src.model_components.specie import Specie, Species
 
 # ! A check pour formules 
 # ! + adapter code a la nouvelle version : variable désormais attributs de classe => self....

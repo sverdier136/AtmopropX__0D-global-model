@@ -7,12 +7,12 @@ from scipy.optimize import fsolve
 from scipy.special import jv
 
 #Local modules
-from src.util import load_csv, load_cross_section
+from src.model_components.util import load_csv, load_cross_section
 # from src.auxiliary_funcs import pressure, maxwellian_flux_speed, u_B, A_eff, A_eff_1, SIGMA_I, h_L
-from src.specie import Specie, Species
-from src.reactions.reaction import Reaction
-from src.reactions.general_elastic_collision import GeneralElasticCollision
-from src.chamber_caracteristics import Chamber
+from src.model_components.specie import Specie, Species
+from src.model_components.reactions.reaction import Reaction
+from src.model_components.reactions.general_elastic_collision import GeneralElasticCollision
+from src.model_components.chamber_caracteristics import Chamber
 
 class GlobalModel:
 

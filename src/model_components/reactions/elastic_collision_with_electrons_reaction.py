@@ -3,10 +3,10 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
 
-from src.specie import Specie, Species
-from src.reactions.reaction import Reaction
-from src.chamber_caracteristics import Chamber
-from src.reactions.general_elastic_collision import GeneralElasticCollision
+from src.model_components.specie import Specie, Species
+from src.model_components.reactions.reaction import Reaction
+from src.model_components.chamber_caracteristics import Chamber
+from src.model_components.reactions.general_elastic_collision import GeneralElasticCollision
 
 # * A check + chamber
 # ! omega a changer selon nom dans Chamber

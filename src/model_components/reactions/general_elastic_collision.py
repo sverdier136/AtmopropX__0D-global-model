@@ -1,4 +1,4 @@
-from src.reactions.reaction import Reaction
+from src.model_components.reactions.reaction import Reaction
 
 class GeneralElasticCollision(Reaction):
     """Should be inherited by all ellastic collisions considered in the calculation of the plasma dielectric permitivity

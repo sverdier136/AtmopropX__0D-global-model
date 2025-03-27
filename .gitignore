@@ -1,7 +1,8 @@
 desktop.ini
 vscode
-
 .vscode
+
+logs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

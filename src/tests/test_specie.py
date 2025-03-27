@@ -1,4 +1,4 @@
-from ..specie import Specie, Species
+from ..model_components.specie import Specie, Species
 
 
 def test_Species_nb():
