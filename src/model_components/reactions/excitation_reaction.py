@@ -27,15 +27,15 @@ class Excitation(Reaction):
                  ):
         """
         Reaction class
-        /!\ Electrons should NOT be added to reactives and products
-            Inputs : 
-                species : instance of class Species, lists all species present 
-                reactives : list with all reactives names
-                products : list with all products names
-                rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
-                energy_threshold : energy threshold of electron so that reaction occurs
-                stoechio_coeffs : stoechiometric coefficients always positive
-                spectators : list with spectators names (used to print reaction)
+        
+        Inputs : 
+            species : instance of class Species, lists all species present 
+            reactives : list with all reactives names
+            products : list with all products names
+            rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
+            energy_threshold : energy threshold of electron so that reaction occurs
+            stoechio_coeffs : stoechiometric coefficients always positive
+            spectators : list with spectators names (used to print reaction)
         """
         # species.names[0] nom des électrons
         super().__init__(species, [species.names[0], molecule_name], [species.names[0], molecule_name], chamber)

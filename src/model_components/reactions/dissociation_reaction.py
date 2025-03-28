@@ -20,14 +20,13 @@ class ElasticCollisionWithElectron(Reaction):
     """
 
     def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float):
-        """
-        Dissociation class
-        /!\ Electrons should NOT be added to reactives and products
-            Inputs : 
-                species : instance of class Species, lists all species present 
-                colliding_specie : name of specie that collides with an electron. Must be a string !
-                rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
-                energy_threshold : energy threshold of electron so that reaction occurs
+        """ Dissociation class
+        Parameters :
+        ------------- 
+        species : Instance of class Species, lists all species present 
+        colliding_specie : Name of specie that collides with an electron. Must be a string !
+        rate_constant : Function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
+        energy_threshold : Energy threshold of electron so that reaction occurs
         """
         super().__init__(species, [species.names, colliding_specie], [species.names, colliding_specie], rate_constant, energy_treshold)
 

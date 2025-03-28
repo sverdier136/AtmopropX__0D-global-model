@@ -11,7 +11,7 @@ def load_cross_section(filename):
 
 
 if __name__ == "__main__":
-    e_r,cs_r=load_cross_section('..\cross_sections\Xe\exc_Xe.csv')
+    e_r,cs_r=load_cross_section('..\\cross_sections\\Xe\\exc_Xe.csv')
     print(e_r)
     print(cs_r)
     print("done")
