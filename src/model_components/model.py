@@ -4,7 +4,6 @@ from scipy.constants import m_e, e, pi, k, epsilon_0 as eps_0, mu_0, c as c_ligh
 from scipy.integrate import trapezoid, solve_ivp, odeint
 from scipy.interpolate import interp1d
 from scipy.optimize import fsolve
-from scipy.special import jv
 import json
 import os
 import warnings
@@ -17,12 +16,12 @@ from src.model_components.reactions.reaction import Reaction
 from src.model_components.reactions.general_elastic_collision import GeneralElasticCollision
 from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeating
 from src.model_components.chamber_caracteristics import Chamber
+from src.model_components.variable_tracker import VariableTracker
 
-log_folder_path = "./logs"
 
 class GlobalModel:
 
-    def __init__(self, species: Species, reaction_set: list[Reaction], chamber: Chamber, simulation_name: str = "test_simu", electron_heating: ElectronHeating = None):
+    def __init__(self, species: Species, reaction_set: list[Reaction], chamber: Chamber, electron_heating: ElectronHeating = None, simulation_name: str = "test_simu", log_folder_path: str = "./logs"):
         """Object simulating the evolution of a plasma with 0D model. 
             Inputs :
                 config_dict : dictionary containing all parameters about the experimental setup
@@ -33,11 +32,17 @@ class GlobalModel:
         self.chamber = chamber
         self.simulation_name = simulation_name
         self.tracked_variables = {}
+        self.var_tracker = VariableTracker(log_folder_path, simulation_name+".json")
+
+        for reac in reaction_set:
+            reac.set_var_tracker(self.var_tracker)
+
         if electron_heating is None:
             warnings.warn("No electron heating reaction was provided")
             self.electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber)
         else:
-            self.electron_heating = electron_heating    
+            self.electron_heating = electron_heating
+        self.electron_heating.set_var_tracker(self.var_tracker) 
 
 
     def eval_property(self, func, sol):
@@ -65,13 +70,9 @@ class GlobalModel:
             if isinstance(reac, GeneralElasticCollision) :
                 sp_idx, freq = reac.colliding_specie_and_collision_frequency(state)
                 collision_frequencies[sp_idx] += freq
-        eps_p = self.eps_p(collision_frequencies, state)
-
-        # calculation of P_abs : the power given by the antenna to the plasma
-        #self.P_abs(self.R_ind( eps_p  ))
 
         # Energy given to the electrons via the coil
-        dy_energies += self.electron_heating.absorbed_power(state, collision_frequencies)   #self.P_abs(self.R_ind( eps_p  ))
+        dy_energies += self.electron_heating.absorbed_power(state, collision_frequencies)
 
         for i in range(3):
             self.add_value_to_variable("dy_energy_"+str(i), dy_energies[i])
@@ -91,8 +92,6 @@ class GlobalModel:
         self.add_value_to_variable("time", t)
         self.add_densities_and_temperature(state)
         self.add_densities_and_temperature(dy, prefix="dy_")
-        self.add_value_to_variable("eps_p_real", np.real(eps_p))
-        self.add_value_to_variable("eps_p_imag", np.imag(eps_p))
 
         return dy
     

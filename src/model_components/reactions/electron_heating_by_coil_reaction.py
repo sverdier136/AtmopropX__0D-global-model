@@ -1,11 +1,14 @@
 from typing import override
 import numpy as np
 from numpy.typing import NDArray
-from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
+from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0, c as c_light   # k is k_B -> Boltzmann constant
+from scipy.optimize import fsolve
+from scipy.special import jv
+
 
 from src.model_components.specie import Specie, Species
-from src.model_components.reactions.reaction import Reaction
 from src.model_components.chamber_caracteristics import Chamber
+from src.model_components.variable_tracker import VariableTracker
 
 
 
@@ -25,13 +28,23 @@ class ElectronHeating:
         """
         self.species = species
         self.chamber = chamber
+        self.var_tracker = None
 
     def absorbed_power(self, state, collision_frequencies) -> float:
         """
         Returns the absorbed power by the electrons
         """
         raise NotImplementedError("absorbed_power not implemented in subclass")
+    
+    def set_var_tracker(self, tracker: VariableTracker):
+        """Sets the variable tracker for this reaction"""
+        self.var_tracker = tracker
         
+
+
+
+
+
 
 class ElectronHeatingConstantAbsorbedPower(ElectronHeating):
     """
@@ -51,9 +64,14 @@ class ElectronHeatingConstantAbsorbedPower(ElectronHeating):
         self.power_absorbed = power_absorbed
 
     @override
-    def absorbed_power(self, state) -> float:
+    def absorbed_power(self, state, collision_frequencies) -> float:
         return self.absorbed_power
     
+
+
+
+
+
 
 # ! Non codé, En cours
 class ElectronHeatingConstantCurrent(ElectronHeating):
@@ -82,14 +100,15 @@ class ElectronHeatingConstantCurrent(ElectronHeating):
     
     def R_ind(self, eps_p):
         '''plamsma resistance, used in calculating the power P_abs'''
+
         k_p = (self.chamber.omega / c_light) * np.sqrt(eps_p)
         a = 2 * pi * self.chamber.N**2 / (self.chamber.L * self.chamber.omega * eps_0)
         #jv are Besel functions
         b = 1j * k_p * self.chamber.R * jv(1, k_p * self.chamber.R) / (eps_p * jv(0, k_p * self.chamber.R))
         R_ind = a * np.real(b)
-        self.add_value_to_variable("R_ind", R_ind)
-        self.add_value_to_variable("R_ind_a", a)
-        self.add_value_to_variable("R_ind_b", np.real(b))
+        self.var_tracker.add_value_to_variable("R_ind", R_ind)
+        self.var_tracker.add_value_to_variable("R_ind_a", a)
+        self.var_tracker.add_value_to_variable("R_ind_b", np.real(b))
         return R_ind
     
     def eps_p (self, collision_frequencies , state) :
@@ -105,8 +124,10 @@ class ElectronHeatingConstantCurrent(ElectronHeating):
             value = np.sum(normalized_c*(epsilons_i-1)/(epsilons_i + 2*x)) + (1-x)/(3*x)   
             return [np.real(value), np.imag(value)]
         eps_p = fsolve(equation , [1, 0.01])
+        self.var_tracker.add_value_to_variable("eps_p_real", np.real(eps_p))
+        self.var_tracker.add_value_to_variable("eps_p_imag", np.imag(eps_p))
         return eps_p[0]+eps_p[1]*1j
 
     @override
-    def absorbed_power(self, state) -> float:
+    def absorbed_power(self, state, collision_frequencies) -> float:
         return self.P_abs(self.R_ind( self.eps_p(collision_frequencies, state)  ))

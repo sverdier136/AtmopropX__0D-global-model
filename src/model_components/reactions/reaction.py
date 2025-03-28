@@ -4,6 +4,7 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 
 from src.model_components.specie import Specie, Species
 from src.model_components.chamber_caracteristics import Chamber
+from src.model_components.variable_tracker import VariableTracker
 
 # * Ok ! Vérifié par Liam
 # ! Recheck pour chamber
@@ -59,6 +60,7 @@ class Reaction:
 
         self.spectators = spectators
         self.chamber = chamber
+        self.var_tracker = None
         
 
     def density_change_rate(self, state: NDArray[float]): # type: ignore
@@ -91,6 +93,10 @@ class Reaction:
         reactives_str = format_species(self.reactives, self.reactives_indices)
         products_str = format_species(self.products, self.products_indices)
         return f"{reactives_str} -> {products_str}          K_r = {self.rate_constant.__name__}"
+    
+    def set_var_tracker(self, tracker: VariableTracker):
+        """Sets the variable tracker for this reaction"""
+        self.var_tracker = tracker
 
 
 
