@@ -61,11 +61,11 @@ class ElectronHeatingConstantAbsorbedPower(ElectronHeating):
                 chamber : instance of class Chamber, contains the chamber characteristics
         """
         super().__init__(species, chamber)
-        self.power_absorbed = power_absorbed
+        self.power_absorbed_value = power_absorbed
 
     @override
     def absorbed_power(self, state, collision_frequencies) -> float:
-        return self.absorbed_power
+        return self.power_absorbed_value
     
 
 

@@ -17,8 +17,8 @@ class VariableTracker:
     def add_all_densities_and_temperatures(self, state, species: Species, prefix=""):
         for i, specie in enumerate(species.species):
             self.add_value_to_variable(prefix + specie.name+"_density", state[i])
-        for i, specie in enumerate(species.species):
-            self.add_value_to_variable(prefix + specie.name + '_temperature', state[species.nb + i])
+        for i in range(len(state) - species.nb):
+            self.add_value_to_variable(prefix + f"molecules_with_{i}_atom" + '_temperature', state[species.nb + i])
 
     def save_tracked_variables(self):
         """Save in json file"""

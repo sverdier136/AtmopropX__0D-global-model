@@ -14,7 +14,11 @@ model = GlobalModel(species, reactions_list, chamber)
 
 
 # Solve the model
-sol = model.solve(0, 5e-1)  # TODO Needs some testing
+try:
+    sol = model.solve(0, 5e-1)  # TODO Needs some testing
+except Exception as exception:
+    model.var_tracker.save_tracked_variables()
+    raise exception
 final_states = sol.y
 
 # Extract time points

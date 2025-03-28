@@ -39,7 +39,7 @@ class GlobalModel:
 
         if electron_heating is None:
             warnings.warn("No electron heating reaction was provided")
-            self.electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber)
+            self.electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0., chamber)
         else:
             self.electron_heating = electron_heating
         self.electron_heating.set_var_tracker(self.var_tracker) 
@@ -72,10 +72,10 @@ class GlobalModel:
                 collision_frequencies[sp_idx] += freq
 
         # Energy given to the electrons via the coil
-        dy_energies += self.electron_heating.absorbed_power(state, collision_frequencies)
+        dy_energies[0] += self.electron_heating.absorbed_power(state, collision_frequencies)
 
         for i in range(3):
-            self.add_value_to_variable("dy_energy_"+str(i), dy_energies[i])
+            self.var_tracker.add_value_to_variable("dy_energy_"+str(i), dy_energies[i])
         # total thermal capacity of all species with same number of atoms : sum of (3/2 or 5/2 * density)
         total_thermal_capacity_by_sp_type = np.zeros(3)
         dy_total_thermal_capacity_by_sp_type = np.zeros(3)
@@ -89,10 +89,10 @@ class GlobalModel:
         dy[:self.species.nb] = dy_densities
         dy[self.species.nb:] = np.nan_to_num(dy_temp, nan=0.0)
 
-        self.add_value_to_variable("time", t)
-        self.add_densities_and_temperature(state)
-        self.add_densities_and_temperature(dy, prefix="dy_")
-
+        self.var_tracker.add_value_to_variable("time", t)
+        self.var_tracker.add_all_densities_and_temperatures(state, self.species)
+        self.var_tracker.add_all_densities_and_temperatures(dy, self.species,prefix="dy_")
+        #self.var_tracker.add_value_to_variable("collision_frequencies", collision_frequencies)
         return dy
     
     
@@ -134,7 +134,7 @@ class GlobalModel:
     def solve(self, t0, tf):
         y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, -1])
         sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
-        self.save_tracked_variables(self.simulation_name+".json")
+        self.var_tracker.save_tracked_variables()
         return sol
 
 
