@@ -86,9 +86,9 @@ class GlobalModel:
 
         # Energy given to the electrons via the coil
         dy_energies[0] += power
+
         for i in range(3):
             self.add_value_to_variable("dy_energy_"+str(i), dy_energies[i])
-
         # total thermal capacity of all species with same number of atoms : sum of (3/2 or 5/2 * density)
         total_thermal_capacity_by_sp_type = np.zeros(3)
         dy_total_thermal_capacity_by_sp_type = np.zeros(3)
