@@ -74,8 +74,7 @@ class GlobalModel:
         # Energy given to the electrons via the coil
         dy_energies[0] += self.electron_heating.absorbed_power(state, collision_frequencies)
 
-        for i in range(3):
-            self.var_tracker.add_value_to_variable("dy_energy_"+str(i), dy_energies[i])
+        self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_atom")
         # total thermal capacity of all species with same number of atoms : sum of (3/2 or 5/2 * density)
         total_thermal_capacity_by_sp_type = np.zeros(3)
         dy_total_thermal_capacity_by_sp_type = np.zeros(3)
@@ -92,6 +91,8 @@ class GlobalModel:
         self.var_tracker.add_value_to_variable("time", t)
         self.var_tracker.add_all_densities_and_temperatures(state, self.species)
         self.var_tracker.add_all_densities_and_temperatures(dy, self.species,prefix="dy_")
+        energies = total_thermal_capacity_by_sp_type * temp
+        self.var_tracker.add_value_to_variable_list("energy_", energies, "_atom")
         #self.var_tracker.add_value_to_variable("collision_frequencies", collision_frequencies)
         return dy
     

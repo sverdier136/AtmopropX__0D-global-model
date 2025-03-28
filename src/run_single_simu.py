@@ -9,8 +9,8 @@ from src.reaction_sets.Reaction_set_Xe_test1 import get_species_and_reactions
 
 
 chamber = Chamber(config_dict)
-species, reactions_list = get_species_and_reactions(chamber)
-model = GlobalModel(species, reactions_list, chamber)
+species, reactions_list, electron_heating = get_species_and_reactions(chamber)
+model = GlobalModel(species, reactions_list, chamber, electron_heating)
 
 
 # Solve the model
