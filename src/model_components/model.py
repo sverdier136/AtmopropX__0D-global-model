@@ -7,6 +7,7 @@ from scipy.optimize import fsolve
 from scipy.special import jv
 import json
 import os
+import warnings
 
 #Local modules
 from src.model_components.util import load_csv, load_cross_section
@@ -14,13 +15,14 @@ from src.model_components.util import load_csv, load_cross_section
 from src.model_components.specie import Specie, Species
 from src.model_components.reactions.reaction import Reaction
 from src.model_components.reactions.general_elastic_collision import GeneralElasticCollision
+from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeating
 from src.model_components.chamber_caracteristics import Chamber
 
 log_folder_path = "./logs"
 
 class GlobalModel:
 
-    def __init__(self, species: Species, reaction_set: list[Reaction], chamber: Chamber, simulation_name: str = "test_simu"):
+    def __init__(self, species: Species, reaction_set: list[Reaction], chamber: Chamber, simulation_name: str = "test_simu", electron_heating: ElectronHeating = None):
         """Object simulating the evolution of a plasma with 0D model. 
             Inputs :
                 config_dict : dictionary containing all parameters about the experimental setup
@@ -31,7 +33,11 @@ class GlobalModel:
         self.chamber = chamber
         self.simulation_name = simulation_name
         self.tracked_variables = {}
-    
+        if electron_heating is None:
+            warnings.warn("No electron heating reaction was provided")
+            self.electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber)
+        else:
+            self.electron_heating = electron_heating    
 
 
     def eval_property(self, func, sol):
@@ -40,27 +46,7 @@ class GlobalModel:
         prop = np.zeros(sol.shape[0])   #number of instants
         for i in np.arange(sol.shape[0]):
             prop[i] = func(sol[i])
-        return prop
-    
-    def normalised_concentrations(self , state: NDArray[np.float64]) :
-        """Returns normalized concentrations (such that they sum up to 1)"""
-        return state[:self.species.nb]/np.sum(state[:self.species.nb])
-        
-    def eps_p (self, collision_frequencies , state) :
-        """Calcule la permittivité diélectrique relative due à toutes les réactions de collisions elastiques elctron-neutre. Ces réactions sont considérées séparément par chacun des eps_i
-            collision_frequencies : np.array containing the collision frequencies for each specie in the order in which they appear in self.species"""
-        #fonction utilisée dans f_dy
-        normalized_c = self.normalised_concentrations(state)
-        omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
-        epsilons_i = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*collision_frequencies))
-
-        def equation(x):
-            x = x[0] + x[1]*1j     
-            value = np.sum(normalized_c*(epsilons_i-1)/(epsilons_i + 2*x)) + (1-x)/(3*x)   
-            return [np.real(value), np.imag(value)]
-        eps_p = fsolve(equation , [1, 0.01])
-        return eps_p[0]+eps_p[1]*1j
-
+        return prop       
     
     def f_dy(self, t, state):
         """Returns the derivative of the vector 'state' describing the state of plasma.
@@ -82,10 +68,10 @@ class GlobalModel:
         eps_p = self.eps_p(collision_frequencies, state)
 
         # calculation of P_abs : the power given by the antenna to the plasma
-        power = self.P_abs(self.R_ind( eps_p  ))
+        #self.P_abs(self.R_ind( eps_p  ))
 
         # Energy given to the electrons via the coil
-        dy_energies[0] += power
+        dy_energies += self.electron_heating.absorbed_power(state, collision_frequencies)   #self.P_abs(self.R_ind( eps_p  ))
 
         for i in range(3):
             self.add_value_to_variable("dy_energy_"+str(i), dy_energies[i])
@@ -110,20 +96,8 @@ class GlobalModel:
 
         return dy
     
-    def R_ind(self, eps_p):
-        '''plamsma resistance, used in calculating the power P_abs'''
-        k_p = (self.chamber.omega / c_light) * np.sqrt(eps_p)
-        a = 2 * pi * self.chamber.N**2 / (self.chamber.L * self.chamber.omega * eps_0)
-        #jv are Besel functions
-        b = 1j * k_p * self.chamber.R * jv(1, k_p * self.chamber.R) / (eps_p * jv(0, k_p * self.chamber.R))
-        R_ind = a * np.real(b)
-        self.add_value_to_variable("R_ind", R_ind)
-        self.add_value_to_variable("R_ind_a", a)
-        self.add_value_to_variable("R_ind_b", np.real(b))
-        return R_ind
+    
 
-    def P_abs(self , R_ind):
-        return R_ind* self.chamber.I_coil**2 / 2
 
     def thrust_i(self, T_e, n_e, n_ion , m_ion , charge):
         """Thrust produced by the ion beam of one specie"""
@@ -188,26 +162,11 @@ class GlobalModel:
 
             # calculation of P_abs : the power given by the antenna to the plasma
 
-            power_array[i] = self.P_abs(self.R_ind(eps_p))
+            power_array[i] = self.electron_heating.absorbed_power(final_state, collision_frequencies)   #self.P_abs(self.R_ind( eps_p  ))
 
             final_states[i] = final_state
             
         return power_array, final_states
     
-    def add_value_to_variable(self, key, value):
-        if key in self.tracked_variables:
-            self.tracked_variables[key].append(value)
-        else:
-            self.tracked_variables[key] = [value]
 
-    def add_densities_and_temperature(self, state, prefix=""):
-        for i, specie in enumerate(self.species.species):
-            self.add_value_to_variable(prefix + specie.name+"_density", state[i])
-        for i, specie in enumerate(self.species.species):
-            self.add_value_to_variable(prefix + specie.name + '_temperature', state[self.species.nb + i])
-
-    def save_tracked_variables(self, log_file='data.json'):
-        """Save in json file"""
-        with open(os.path.join(log_folder_path, log_file), 'w') as file:
-            json.dump(self.tracked_variables, file, indent=4)
     
