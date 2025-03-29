@@ -31,7 +31,6 @@ class GlobalModel:
         self.reaction_set = reaction_set
         self.chamber = chamber
         self.simulation_name = simulation_name
-        self.tracked_variables = {}
         self.var_tracker = VariableTracker(log_folder_path, simulation_name+".json")
 
         for reac in reaction_set:
@@ -71,16 +70,18 @@ class GlobalModel:
                 sp_idx, freq = reac.colliding_specie_and_collision_frequency(state)
                 collision_frequencies[sp_idx] += freq
 
+        self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_before_heating")
         # Energy given to the electrons via the coil
         dy_energies[0] += self.electron_heating.absorbed_power(state, collision_frequencies)
 
         self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_atom")
-        # total thermal capacity of all species with same number of atoms : sum of (3/2 or 5/2 * density)
+        # total thermal capacity (in Joule / eV ) of all species with same number of atoms : sum of (3/2 or 5/2 * e * density)
+        # here E = total_thermal_capacity * T (in eV)
         total_thermal_capacity_by_sp_type = np.zeros(3)
         dy_total_thermal_capacity_by_sp_type = np.zeros(3)
         for sp in self.species.species :
-            total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * densities[sp.index]
-            dy_total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * dy_densities[sp.index]
+            total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * e * densities[sp.index]
+            dy_total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * e * dy_densities[sp.index]
         
         #Transform derivative of energy into derivative of temperature
         dy_temp = (dy_energies - temp * dy_total_thermal_capacity_by_sp_type) / total_thermal_capacity_by_sp_type
@@ -90,12 +91,11 @@ class GlobalModel:
 
         self.var_tracker.add_value_to_variable("time", t)
         self.var_tracker.add_all_densities_and_temperatures(state, self.species)
-        self.var_tracker.add_all_densities_and_temperatures(dy, self.species,prefix="dy_")
+        self.var_tracker.add_all_densities_and_temperatures(dy, self.species, prefix="dy_")
         energies = total_thermal_capacity_by_sp_type * temp
         self.var_tracker.add_value_to_variable_list("energy_", energies, "_atom")
         #self.var_tracker.add_value_to_variable("collision_frequencies", collision_frequencies)
         return dy
-    
     
 
 
@@ -133,7 +133,7 @@ class GlobalModel:
         return total
         
     def solve(self, t0, tf):
-        y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, -1])
+        y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
         sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
         self.var_tracker.save_tracked_variables()
         return sol

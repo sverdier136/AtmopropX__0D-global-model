@@ -28,9 +28,9 @@ config_dict = {
         'I_coil': 26,
 
         # Initial values
-        'T_e_0': 0, #3 * e / k,
+        'T_e_0': 3, # eV
         'n_e_0': 1e18,
-        'T_g_0': 0 #300
+        'T_g_0': 0.025 # eV = 300 Kelvin * k / e
 
 }
 
