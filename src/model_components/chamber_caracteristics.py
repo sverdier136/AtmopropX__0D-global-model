@@ -14,6 +14,7 @@ class Chamber(object):
         self.R      = config_dict["R"]
         self.L      = config_dict["L"]
         self.V_chamber = pi * self.R**2 * self.L
+        #self.V_chamber=0.5
         self.s      = config_dict["s"]
         self.S_grid = pi * self.R**2
         self.S_walls = pi * self.R * self.L
@@ -40,7 +41,8 @@ class Chamber(object):
         self.T_e_0  = config_dict["T_e_0"]
         self.n_e_0  = config_dict["n_e_0"]
         self.T_g_0  = config_dict["T_g_0"]
-        self.n_g_0  = config_dict["n_e_0"]
+        #self.n_g_0  = config_dict["n_e_0"]
+        self.n_g_0 = 1e20
 
 
     
@@ -91,5 +93,5 @@ class Chamber(object):
         return self.h_L(n_ion) * n_ion * self.u_B(T_e, m_ion)
 
 
-    def gamma_neutral(self, n_neutral, T_neutral, m_neutral):
-        return n_neutral*np.sqrt(8*e*T_neutral/(pi*N_A*m_neutral))/4
+    def gamma_neutral(self, n_neutral, T_neutral, m_neutral): #Question: n_neutral tot ou pas ?
+        return n_neutral*np.sqrt(8*e*T_neutral/(pi*m_neutral))/4

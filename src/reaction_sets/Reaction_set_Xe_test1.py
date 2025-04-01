@@ -18,15 +18,19 @@ def get_species_and_reactions(chamber):
     ### Excitation
     #exc_Xe = Excitation(species, "Xe", get_K_func(species, "Xe", "exc_Xe"), 11.6, chamber) 
 
-    ### Terme source
-    src_Xe = GasInjection(species, [0.0, 5e15, 0], 5, chamber) 
+    ### Elastic Collision : OK
+    ##ela_elec_Xe = ElasticCollisionWithElectron(species, "Xe", lambda T : 1e-13, 0, chamber) # get_K_func(species, "Xe", "ela_elec_Xe")
+
+    ### Terme source : OK
+    #src_Xe = GasInjection(species, [0.0, 1.2e19, 0], 0.03, chamber) 
 
     ### Sortie de Xe à travers les grilles
-    #out_Xe = FluxToWallsAndThroughGrids(species, "Xe", get_K_func(species, "Xe", "out_Xe"), 0, chamber) 
+    out_Xe = FluxToWallsAndThroughGrids(species, "Xe", get_K_func(species, "Xe", "out_Xe"), 0, chamber) 
 
     # Reaction list
-    reaction_list = [src_Xe] #[exc_Xe, src_Xe] #[exc_Xe, src_Xe, out_Xe]
+    reaction_list = [out_Xe] #[exc_Xe, src_Xe] #[exc_Xe, src_Xe, out_Xe]
 
-    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 1e3, chamber) 
+    #electron_heating = ElectronHeatingConstantAbsorbedPower(species, 1e3, chamber) 
+    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber)
 
     return species, reaction_list, electron_heating
