@@ -8,6 +8,8 @@ config_dict = {
 
         # Geometry
         'R': 6e-2,
+        #'R' : 1,
+        #'L' : 0.5,
         'L': 10e-2,
         's': 1e-3,
         
@@ -30,7 +32,8 @@ config_dict = {
         # Initial values
         'T_e_0': 3, # eV
         'n_e_0': 1e18,
-        'T_g_0': 0.025 # eV = 300 Kelvin * k / e
+        #'T_g_0': 0.025 # eV = 300 Kelvin * k / e
+        'T_g_0':0.03 
 
 }
 

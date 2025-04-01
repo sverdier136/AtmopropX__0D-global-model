@@ -10,12 +10,20 @@ from src.reaction_sets.Reaction_set_Xe_test1 import get_species_and_reactions
 
 chamber = Chamber(config_dict)
 species, reactions_list, electron_heating = get_species_and_reactions(chamber)
-model = GlobalModel(species, reactions_list, chamber, electron_heating)
+model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="flux_to_walls")
+
+#print(chamber.V_chamber)
+# print(chamber.S_eff_total(chamber.n_g_0))
+# print(chamber.h_L(chamber.n_g_0))
+# print(chamber.h_R(chamber.n_g_0))
+# print(chamber.SIGMA_I*chamber.n_g_0)
+# print(f"SIGMA I est {chamber.SIGMA_I}")
+# print(f"ng0 est {chamber.n_g_0}")
 
 
 # Solve the model
 try:
-    sol = model.solve(0, 5e-1)  # TODO Needs some testing
+    sol = model.solve(0, 1e-2)  # TODO Needs some testing
 except Exception as exception:
     model.var_tracker.save_tracked_variables()
     raise exception

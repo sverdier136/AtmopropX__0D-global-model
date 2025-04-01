@@ -20,7 +20,7 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
 
     def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float, chamber: Chamber):
         """
-        Ellastic collision between molecule and electron
+        Elastic collision between molecule and electron
             Inputs : 
                 species : instance of class Species, lists all species present 
                 colliding_specie : name of specie that collides with an electron. Must be a string !
@@ -28,6 +28,7 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
                 energy_threshold : energy threshold of electron so that reaction occurs
         """
         super().__init__(species, [species.names[0], colliding_specie], [species.names[0], colliding_specie], rate_constant, energy_treshold, chamber)
+        self.rate_constant = rate_constant
 
     @override
     def density_change_rate(self, state):
@@ -63,3 +64,4 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
     @override
     def colliding_specie_and_collision_frequency(self, state: NDArray[np.float64]):
         return self.reactives[1], self.rate_constant(state) * state[0]
+    #ai changé self.reactives[1] en self.reactives[0]

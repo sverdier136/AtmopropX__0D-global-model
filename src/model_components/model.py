@@ -67,8 +67,8 @@ class GlobalModel:
             dy_densities += reac.density_change_rate(state)
             dy_energies += reac.energy_change_rate(state)
             if isinstance(reac, GeneralElasticCollision) :
-                sp_idx, freq = reac.colliding_specie_and_collision_frequency(state)
-                collision_frequencies[sp_idx] += freq
+                sp, freq = reac.colliding_specie_and_collision_frequency(state)
+                collision_frequencies[sp.index] += freq
 
         self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_before_heating")
         # Energy given to the electrons via the coil
@@ -94,12 +94,14 @@ class GlobalModel:
         self.var_tracker.add_all_densities_and_temperatures(dy, self.species, prefix="dy_")
         energies = total_thermal_capacity_by_sp_type * temp
         self.var_tracker.add_value_to_variable_list("energy_", energies, "_atom")
+        self.var_tracker.add_value_to_variable('h_L', self.chamber.h_L(self.n_g(state)))
+        self.var_tracker.add_value_to_variable('h_R', self.chamber.h_R(self.n_g(state)))
         #self.var_tracker.add_value_to_variable("collision_frequencies", collision_frequencies)
         return dy
     
 
 
-    def thrust_i(self, T_e, n_e, n_ion , m_ion , charge):
+    def thrust_i(self, T_e, n_e, n_ion , m_ion , charge): #Faux, qui est specie ?
         """Thrust produced by the ion beam of one specie"""
         return self.chamber.gamma_ion(n_ion, T_e , m_ion) * specie.mass * self.chamber.v_beam(m_ion , charge) * self.chamber.beta_i * pi * self.chamber.R ** 2
 
@@ -113,7 +115,7 @@ class GlobalModel:
         total_thrust = 0
         for i in(range(1,len(state)/2)):
             if self.species.species[i].charge != 0 :
-                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i] , slef.species.species[i].mass , self.species.species[i].charge)
+                total_thrust += self.thrust_i( state[len(state)/2] , state[0] , state[i] , self.species.species[i].mass , self.species.species[i].charge)
 
 
     def total_ion_current(self , state ) :
@@ -127,13 +129,16 @@ class GlobalModel:
     def n_g (self, state) :
         '''total density of neutral gases'''
         total = 0
-        for i in(range(len(state)/2)) :
-            if self.specie.charge(self.species.species[i]) == 0 :
+        #for i in(range(len(state)/2)) :
+        for i in range(self.species.nb):
+            #if self.specie.charge(self.species.species[i]) == 0 :
+            if self.species.species[i].charge == 0:
                 total += state[i]
         return total
         
     def solve(self, t0, tf):
-        y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
+        #y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
+        y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, self.chamber.n_e_0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
         sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
         self.var_tracker.save_tracked_variables()
         return sol
