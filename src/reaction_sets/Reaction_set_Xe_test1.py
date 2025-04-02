@@ -22,14 +22,14 @@ def get_species_and_reactions(chamber):
         return 1.2921e-13 * np.exp(-Eexc/T)
 
 
-    ### Excitation
+    ### Excitation : OK
     exc_Xe = Excitation(species, "Xe", get_K_func(species, "Xe", "exc_Xe"), 11.6, chamber) 
     #get_K_func(species, "Xe", "exc_Xe")
     #lambda T: Kexc(T)
 
     ### Elastic Collision : OK
     ##ela_elec_Xe = ElasticCollisionWithElectron(species, "Xe", lambda T : 1e-13, 0, chamber) # get_K_func(species, "Xe", "ela_elec_Xe")
-
+    
     ### Terme source : OK
     #src_Xe = GasInjection(species, [0.0, 1.2e19, 0], 0.03, chamber) 
 
@@ -43,8 +43,7 @@ def get_species_and_reactions(chamber):
         K_iz_2 = 6.73e-15 * (T_e)**0.5 * (-0.0001031*T_e**2 + 6.386 * np.exp(- E_iz/T_e))
         return 0.5 * (K_iz_1 + K_iz_2)
 
-    ### Ionisation
-    #ion_Xe =  
+    ### Ionisation 
     #ion_Xe = Ionisation(species, "Xe", "Xe+", get_K_func(species, "Xe", "Ionization_Xe"), 12.127, chamber) 
     #get_K_func(species, "Xe", "Ionization_Xe")
     #lambda T: 2.2384710835071163e-15
@@ -52,7 +51,7 @@ def get_species_and_reactions(chamber):
 
     # Reaction list
     reaction_list = [exc_Xe] #[exc_Xe, src_Xe] #[exc_Xe, src_Xe, out_Xe]
-
+   
     #electron_heating = ElectronHeatingConstantAbsorbedPower(species, 1e3, chamber) 
     electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber)
 
