@@ -52,6 +52,8 @@ class Ionisation(Reaction):
         rate[self.reactives_indices[1]] = - reaction_speed
         # change for molecule after ionization
         rate[self.products_indices[1]] = reaction_speed
+        self.var_tracker.add_value_to_variable('Kiz', self.rate_constant(state))
+        self.var_tracker.add_value_to_variable('reaction_speed', reaction_speed)
         
         return rate
 
@@ -61,7 +63,7 @@ class Ionisation(Reaction):
         rate = np.zeros(3)
 
         K = self.rate_constant(state)
-        rate[0] = self.threshold_energy * K * np.prod(state[self.reactives_indices])
+        rate[0] = e*self.threshold_energy * K * np.prod(state[self.reactives_indices])
         
         return rate
 

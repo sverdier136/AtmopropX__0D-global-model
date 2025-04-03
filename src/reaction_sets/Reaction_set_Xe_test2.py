@@ -5,7 +5,7 @@ from src.model_components.reactions.elastic_collision_with_electrons_reaction im
 from src.model_components.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
 from src.model_components.reactions.gas_injection_reaction import GasInjection
 from src.model_components.specie import Species, Specie
-from src.constant_rate_constant import get_K_func
+#from src.constant_rate_constant import get_K_func
 
 def get_species_and_reactions(chamber):
 

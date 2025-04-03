@@ -10,7 +10,7 @@ from src.reaction_sets.Reaction_set_Xe_test1 import get_species_and_reactions
 
 chamber = Chamber(config_dict)
 species, reactions_list, electron_heating = get_species_and_reactions(chamber)
-model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="flux_to_walls")
+model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="ionisation")
 
 #print(chamber.V_chamber)
 # print(chamber.S_eff_total(chamber.n_g_0))
@@ -23,7 +23,7 @@ model = GlobalModel(species, reactions_list, chamber, electron_heating, simulati
 
 # Solve the model
 try:
-    sol = model.solve(0, 1e-2)  # TODO Needs some testing
+    sol = model.solve(0, 1e-5)  # TODO Needs some testing
 except Exception as exception:
     model.var_tracker.save_tracked_variables()
     raise exception
