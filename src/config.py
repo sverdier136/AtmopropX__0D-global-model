@@ -32,6 +32,7 @@ config_dict = {
         # Initial values
         'T_e_0': 3, # eV
         'n_e_0': 1e18,
+        #'n_e_0': 0,
         #'T_g_0': 0.025 # eV = 300 Kelvin * k / e
         'T_g_0':0.03 
 

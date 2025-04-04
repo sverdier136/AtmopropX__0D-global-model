@@ -19,7 +19,7 @@ class FluxToWallsAndThroughGrids(Reaction):
     In reactives, electron must be in first position and colliding_specie next.
     """
 
-    def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float, chamber: Chamber):
+    def __init__(self, species: Species, colliding_specie: str, chamber: Chamber):
         """
         FluxToWallsAndThroughGrids class
             Inputs : 
@@ -30,8 +30,8 @@ class FluxToWallsAndThroughGrids(Reaction):
                 chamber : chamber parameters of the chamber in which the reactions are taking place
         """
         super().__init__(species, [species.names[0], colliding_specie], [species.names[0], colliding_specie], chamber)
-        self.rate_constant = rate_constant
-        self.energy_treshold = energy_treshold
+        #self.rate_constant = rate_constant
+        #self.energy_treshold = energy_treshold
 
     @override
     def density_change_rate(self, state):
@@ -49,6 +49,7 @@ class FluxToWallsAndThroughGrids(Reaction):
                 gamma_e += self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass)
             else:
                 rate[sp.index] = - self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms], sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
+        gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
         rate[0] = - gamma_e * self.chamber.S_eff_total(n_g) / self.chamber.V_chamber
         return rate
 
@@ -76,6 +77,7 @@ class FluxToWallsAndThroughGrids(Reaction):
             else:
                 E_neutral=sp.thermal_capacity * e * state[self.species.nb + sp.nb_atoms]
                 rate[sp.nb_atoms] = - E_neutral * self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms] , sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
+        gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
         rate[0] = - E_kin * gamma_e * self.chamber.S_eff_total(n_g) / self.chamber.V_chamber
         return rate
     
