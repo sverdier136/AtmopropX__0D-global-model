@@ -89,8 +89,8 @@ class Chamber(object):
         return 2 * self.h_R(n_g_tot) * pi * self.R * self.L + (2 - self.beta_i) * self.h_L(n_g_tot) * pi * self.R**2
 
 
-    def gamma_ion(self, n_ion, T_e , m_ion, n_g_tot):
-        return self.h_L(n_g_tot) * n_ion * self.u_B(T_e, m_ion)
+    def gamma_ion(self, n_ion, T_e , m_ion):
+        return n_ion * self.u_B(T_e, m_ion)
 
 
     def gamma_neutral(self, n_neutral, T_neutral, m_neutral): # TODO Question: n_neutral tot ou pas ?
