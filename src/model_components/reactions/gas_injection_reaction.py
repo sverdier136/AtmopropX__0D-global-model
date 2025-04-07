@@ -32,7 +32,9 @@ class GasInjection(Reaction):
 
     @override
     def density_change_rate(self, state):
-        return self.injection_rates / self.chamber.V_chamber 
+        rate = self.injection_rates / self.chamber.V_chamber
+        self.var_tracker.add_value_to_variable_list("density_change_gas_injection", rate)
+        return rate
     
     #y a pas un problème dans la fonction ? parce que cela semble l'imposer à toutes les espèces...
 
@@ -43,5 +45,5 @@ class GasInjection(Reaction):
 
         for sp in self.products:
             rate[sp.nb_atoms] += 3/2 * self.injection_rates[sp.index] * e * self.T_injection / self.chamber.V_chamber
-        self.var_tracker.add_value_to_variable_list("dy_energy_", rate, "_gas_injection")
+        self.var_tracker.add_value_to_variable_list("energy_change_gas_injection", rate)
         return rate

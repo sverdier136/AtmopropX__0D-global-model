@@ -55,60 +55,64 @@ class GlobalModel:
     def f_dy(self, t, state):
         """Returns the derivative of the vector 'state' describing the state of plasma.
             'state' has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
-        densities = state[:self.species.nb]
-        temp = state[self.species.nb:]
+        try:
+            densities = state[:self.species.nb]
+            temp = state[self.species.nb:]
 
-        dy = np.zeros(state.shape)
-        dy_densities = np.zeros(self.species.nb)
-        dy_energies = np.zeros(3)
+            dy = np.zeros(state.shape)
+            dy_densities = np.zeros(self.species.nb)
+            dy_energies = np.zeros(3)
 
-        collision_frequencies = np.zeros(self.species.nb)
-        for reac in self.reaction_set:
-            dy_densities += reac.density_change_rate(state)
-            dy_energies += reac.energy_change_rate(state)
-            if isinstance(reac, GeneralElasticCollision) :
-                sp, freq = reac.colliding_specie_and_collision_frequency(state)
-                collision_frequencies[sp.index] += freq
+            collision_frequencies = np.zeros(self.species.nb)
+            for reac in self.reaction_set:
+                dy_densities += reac.density_change_rate(state)
+                dy_energies += reac.energy_change_rate(state)
+                if isinstance(reac, GeneralElasticCollision) :
+                    sp, freq = reac.colliding_specie_and_collision_frequency(state)
+                    collision_frequencies[sp.index] += freq
 
-        self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_before_heating")
-        # Energy given to the electrons via the coil
-        dy_energies[0] += self.electron_heating.absorbed_power(state, collision_frequencies)
-        #self.var_tracker.add_value_to_variable('power', self.electron_heating.absorbed_power(state, collision_frequencies))
+            self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_before_heating")
+            # Energy given to the electrons via the coil
+            dy_energies[0] += self.electron_heating.absorbed_power(state, collision_frequencies)
+            #self.var_tracker.add_value_to_variable('power', self.electron_heating.absorbed_power(state, collision_frequencies))
 
-        self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_atom")
-        # total thermal capacity (in Joule / eV ) of all species with same number of atoms : sum of (3/2 or 5/2 * e * density)
-        # here E = total_thermal_capacity * T (in eV)
-        total_thermal_capacity_by_sp_type = np.zeros(3)
-        dy_total_thermal_capacity_by_sp_type = np.zeros(3)
-        for sp in self.species.species :
-            total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * e * densities[sp.index]
-            dy_total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * e * dy_densities[sp.index]
-        
-        #Transform derivative of energy into derivative of temperature
-        dy_temp = (dy_energies - temp * dy_total_thermal_capacity_by_sp_type) / total_thermal_capacity_by_sp_type
+            self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_atom")
+            # total thermal capacity (in Joule / eV ) of all species with same number of atoms : sum of (3/2 or 5/2 * e * density)
+            # here E = total_thermal_capacity * T (in eV)
+            total_thermal_capacity_by_sp_type = np.zeros(3)
+            dy_total_thermal_capacity_by_sp_type = np.zeros(3)
+            for sp in self.species.species :
+                total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * e * densities[sp.index]
+                dy_total_thermal_capacity_by_sp_type[sp.nb_atoms] += sp.thermal_capacity * e * dy_densities[sp.index]
+            
+            #Transform derivative of energy into derivative of temperature
+            dy_temp = (dy_energies - temp * dy_total_thermal_capacity_by_sp_type) / total_thermal_capacity_by_sp_type
 
-        dy[:self.species.nb] = dy_densities
-        dy[self.species.nb:] = np.nan_to_num(dy_temp, nan=0.0)
+            dy[:self.species.nb] = dy_densities
+            dy[self.species.nb:] = np.nan_to_num(dy_temp, nan=0.0)
 
-        self.var_tracker.add_value_to_variable("time", t)
-        self.var_tracker.add_all_densities_and_temperatures(state, self.species)
-        self.var_tracker.add_all_densities_and_temperatures(dy, self.species, prefix="dy_")
-        energies = total_thermal_capacity_by_sp_type * temp
-        self.var_tracker.add_value_to_variable_list("energy_", energies, "_atom")
-        self.var_tracker.add_value_to_variable('h_L', self.chamber.h_L(self.n_g(state)))
-        self.var_tracker.add_value_to_variable('h_R', self.chamber.h_R(self.n_g(state)))
+            self.var_tracker.add_value_to_variable("time", t)
+            self.var_tracker.add_all_densities_and_temperatures(state, self.species)
+            self.var_tracker.add_all_densities_and_temperatures(dy, self.species, prefix="dy_")
+            energies = total_thermal_capacity_by_sp_type * temp
+            self.var_tracker.add_value_to_variable_list("energy_", energies, "_atom")
+            self.var_tracker.add_value_to_variable('h_L', self.chamber.h_L(self.n_g_tot(state)))
+            self.var_tracker.add_value_to_variable('h_R', self.chamber.h_R(self.n_g_tot(state)))
+            print(f"Derivative calculated for state at t={t}: {state}")
+        except Exception as exc:
+            print(f"Error in f_dy: {exc}")
+            raise e
         #self.var_tracker.add_value_to_variable("collision_frequencies", collision_frequencies)
         return dy
     
+# TODO a coder
+    # def thrust_i(self, T_e, n_e, n_ion , m_ion , charge): #Faux, qui est specie ?
+    #     """Thrust produced by the ion beam of one specie"""
+    #     return self.chamber.gamma_ion(n_ion, T_e , m_ion, self.n_g_tot(state)) * specie.mass * self.chamber.v_beam(m_ion , charge) * self.chamber.beta_i * pi * self.chamber.R ** 2
 
-
-    def thrust_i(self, T_e, n_e, n_ion , m_ion , charge): #Faux, qui est specie ?
-        """Thrust produced by the ion beam of one specie"""
-        return self.chamber.gamma_ion(n_ion, T_e , m_ion) * specie.mass * self.chamber.v_beam(m_ion , charge) * self.chamber.beta_i * pi * self.chamber.R ** 2
-
-    def j_i(self, T_e, n_e, n_ion , m_ion , charge):
-        """Ion current density of one ionic specie extracted by the grids"""
-        return self.chamber.gamma_ion( n_ion, T_e, m_ion) * e * charge
+    # def j_i(self, T_e, n_e, n_ion , m_ion , charge):
+    #     """Ion current density of one ionic specie extracted by the grids"""
+    #     return self.chamber.gamma_ion( n_ion, T_e, m_ion) * e * charge
 
         
     def total_ion_thrust(self , state ) :
@@ -127,7 +131,7 @@ class GlobalModel:
                 total_current += self.j_i( state[len(state)/2] , state[0] , state[i] , self.species.species[i].mass , self.species.species[i].charge)
         return total_current
 
-    def n_g (self, state) :
+    def n_g_tot (self, state) :
         '''total density of neutral gases'''
         total = 0
         #for i in(range(len(state)/2)) :
@@ -139,8 +143,8 @@ class GlobalModel:
         
     def solve(self, t0, tf):
         #y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
-        y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, self.chamber.n_e_0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
-        sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA')
+        y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, self.chamber.n_Xe_plus, self.chamber.T_e_0, self.chamber.T_g_0, 0])
+        sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA', rtol=1e-8, atol=1e-15, first_step=5e-13, min_step=1e-15)    # , max_step=1e-7
         self.var_tracker.save_tracked_variables()
         return sol
 
