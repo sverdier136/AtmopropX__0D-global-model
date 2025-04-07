@@ -33,24 +33,29 @@ class FluxToWallsAndThroughGrids(Reaction):
         #self.rate_constant = rate_constant
         #self.energy_treshold = energy_treshold
 
+    def n_g_tot (self, state) :
+        '''total density of neutral gases'''
+        total = 0
+        #for i in(range(len(state)/2)) :
+        for i in range(self.species.nb):
+            #if self.specie.charge(self.species.species[i]) == 0 :
+            if self.species.species[i].charge == 0:
+                total += state[i]
+        return total
+
     @override
     def density_change_rate(self, state):
         rate = np.zeros(self.species.nb)
-        n_g = 0
         gamma_e = 0
-        #for i in range(len(state)/2) :
-        for i in range(self.species.nb):
-            #if self.specie.charge(self.species.species[i]) == 0:
-            if self.species.species[i].charge==0:
-                n_g += state[i]
         for sp in self.species.species[1:] :   # electron are skipped because handled before
             if sp.charge != 0:
-                rate[sp.index] = - self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass) * self.chamber.S_eff_total_ion_neutrelisation(n_g) / self.chamber.V_chamber
-                gamma_e += self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass)
+                rate[sp.index] = - self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass, self.n_g_tot(state)) * self.chamber.S_eff_total_ion_neutrelisation(self.n_g_tot(state)) / self.chamber.V_chamber
+                gamma_e += self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass, self.n_g_tot(state))
             else:
                 rate[sp.index] = - self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms], sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
         gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
-        rate[0] = - gamma_e * self.chamber.S_eff_total(n_g) / self.chamber.V_chamber
+        rate[0] = - gamma_e * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
+        self.var_tracker.add_value_to_variable_list("density_change_flux_to_walls_and_through_grids", rate)
         return rate
 
     
@@ -62,23 +67,18 @@ class FluxToWallsAndThroughGrids(Reaction):
         E_kin = 7*e*state[self.species.nb]
 
         
-        n_g = 0
-        #for i in(range(len(state)/2)) :
-        for i in range(self.species.nb):
-            #if self.specie.charge(self.species.species[i]) == 0:
-            if self.species.species[i].charge==0:
-                n_g += state[i]
-        # * NOT neglected for now because missing energy of ion
+        # * energy loss for ions neglected for now because missing energy of ion
         gamma_e = 0
         for sp in self.species.species[1:] :   # electron are skipped because handled before
             if sp.charge != 0:
-                gamma_e += self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass)
+                gamma_e += self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass, self.n_g_tot(state))
             #     rate[sp.nb_atoms] = - self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass) * self.chamber.S_eff_total_ion_neutrelisation(n_g) / self.chamber.V_chamber
             else:
                 E_neutral=sp.thermal_capacity * e * state[self.species.nb + sp.nb_atoms]
                 rate[sp.nb_atoms] = - E_neutral * self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms] , sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
         gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
-        rate[0] = - E_kin * gamma_e * self.chamber.S_eff_total(n_g) / self.chamber.V_chamber
+        rate[0] = - E_kin * gamma_e * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
+        self.var_tracker.add_value_to_variable_list("energy_change_flux_to_walls_and_through_grids", rate)
         return rate
     
     #problème avec les énergies : pour les ions, jsp mais pour les neutres: on prend l'agitation thermique

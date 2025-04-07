@@ -48,6 +48,7 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
         
         rate[0] = -energy_change
         rate[self.reactives[1].nb_atoms] = energy_change #mono / diatomic particles gain energy, electrons lose energy
+        self.var_tracker.add_value_to_variable("energy_change_elastic_collision", energy_change)
 
         return rate
     
