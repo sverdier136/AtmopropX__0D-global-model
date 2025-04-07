@@ -55,6 +55,7 @@ class GlobalModel:
     def f_dy(self, t, state):
         """Returns the derivative of the vector 'state' describing the state of plasma.
             'state' has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
+        
         try:
             densities = state[:self.species.nb]
             temp = state[self.species.nb:]
@@ -102,6 +103,7 @@ class GlobalModel:
         except Exception as exc:
             print(f"Error in f_dy: {exc}")
             raise e
+
         #self.var_tracker.add_value_to_variable("collision_frequencies", collision_frequencies)
         return dy
     
@@ -166,8 +168,8 @@ class GlobalModel:
             collision_frequencies = np.zeros(self.species.nb)
             for reac in self.reaction_set:
                 if isinstance(reac, GeneralElasticCollision) :
-                    sp_idx, freq = reac.colliding_specie_and_collision_frequency(final_state)
-                    collision_frequencies[sp_idx] = freq
+                    sp, freq = reac.colliding_specie_and_collision_frequency(final_state)
+                    collision_frequencies[sp.index] = freq
             eps_p = self.eps_p(collision_frequencies, final_state)
 
             # calculation of P_abs : the power given by the antenna to the plasma
@@ -177,6 +179,30 @@ class GlobalModel:
             final_states[i] = final_state
             
         return power_array, final_states
+    
+    def solve_for_power_fixed(self, power_list, tf = 1):
+        """Calculates for a list of power absorbed in the coil the resulting stationary values of different variables.
+            ## Returns
+            power_array , list_of(`state` after long time)"""
+        final_states = np.zeros((len(power_list), self.species.nb+3))  #shape = (y,x)
+
+        for i, power in enumerate(power_list):
+            self.electron_heating.power_absorbed_value=power
+
+            sol = self.solve(0, tf)    # TODO Needs some testing
+
+            final_state = sol.y[:, -1]
+
+            collision_frequencies = np.zeros(self.species.nb)
+            for reac in self.reaction_set:
+                if isinstance(reac, GeneralElasticCollision) :
+                    sp, freq = reac.colliding_specie_and_collision_frequency(final_state)
+                    collision_frequencies[sp.index] = freq
+            #eps_p = self.eps_p(collision_frequencies, final_state)
+
+            final_states[i] = final_state
+            
+        return final_states
     
 
     
