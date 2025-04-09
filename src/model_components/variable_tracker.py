@@ -24,8 +24,8 @@ class VariableTracker:
         for i in range(len(state) - species.nb):
             self.add_value_to_variable(prefix + f"temperature_{i}_atom", state[species.nb + i])
 
-    def save_tracked_variables(self, log_file_path):
+    def save_tracked_variables(self):
         """Save in json file"""
-        self.log_file_path = log_file_path
+        #self.log_file_path = log_file_path
         with open(self.log_file_path, 'w') as file:
             json.dump(self.tracked_variables, file, indent=4)

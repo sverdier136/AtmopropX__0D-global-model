@@ -30,7 +30,7 @@ try:
     print("Model resolved !")
 except Exception as exception:
     print("Entering exception...")
-    model.var_tracker.save_tracked_variables(log_file_path="all_reactions")
+    model.var_tracker.save_tracked_variables()
     print("Variables saved")
     raise exception
 
