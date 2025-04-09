@@ -56,9 +56,10 @@ def get_species_and_reactions(chamber):
     #lambda T: 2.2384710835071163e-15
     #lambda T: Kiz(T)
 
-    reaction_list = [out_Xe, src_Xe, ion_Xe, exc_Xe, ela_elec_Xe] #[exc_Xe, src_Xe] #[exc_Xe, src_Xe, out_Xe] 
+    #reaction_list = [out_Xe, src_Xe, ion_Xe, exc_Xe, ela_elec_Xe] #[exc_Xe, src_Xe] #[exc_Xe, src_Xe, out_Xe] 
+    reaction_list=[ela_elec_Xe]
 
-    #electron_heating = ElectronHeatingConstantAbsorbedPower(species, 1e3, chamber) 
-    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 1e3, chamber)
+    #electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber) 
+    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber)
 
     return species, reaction_list, electron_heating
