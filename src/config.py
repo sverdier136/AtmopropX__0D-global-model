@@ -30,11 +30,11 @@ config_dict = {
         'I_coil': 26,
 
         # Initial values
-        'T_e_0': 3, # eV
-        'n_e_0': 1e18,
-        'n_Xe+_0': 1e18,
-        'n_g_0': 1e20,
-        'T_g_0':0.03
+        'T_e_0': 2.3, # eV
+        'n_e_0': 9e17,
+        'n_Xe+_0': 9e17,
+        'n_g_0': 2e20,
+        'T_g_0':0.4
 
         # almost at equi
         # 'T_e_0': 2.39, # eV
