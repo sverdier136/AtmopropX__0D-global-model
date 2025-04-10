@@ -74,8 +74,8 @@ class GlobalModel:
 
             self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_before_heating")
             # Energy given to the electrons via the coil
-            dy_energies[0] += self.electron_heating.absorbed_power(state, collision_frequencies)
-            #self.var_tracker.add_value_to_variable('power', self.electron_heating.absorbed_power(state, collision_frequencies))
+            dy_energies[0] += self.electron_heating.absorbed_power(state, collision_frequencies) / self.chamber.V_chamber
+            self.var_tracker.add_value_to_variable('power', self.electron_heating.absorbed_power(state, collision_frequencies) / self.chamber.V_chamber)
 
             self.var_tracker.add_value_to_variable_list("dy_energy_", dy_energies, "_atom")
             # total thermal capacity (in Joule / eV ) of all species with same number of atoms : sum of (3/2 or 5/2 * e * density)

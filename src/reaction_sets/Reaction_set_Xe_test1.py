@@ -24,8 +24,8 @@ def get_species_and_reactions(chamber):
 
     ### Excitation : OK 
 
-    #exc_Xe = Excitation(species, "Xe", lambda T: Kexc(T), 11.6, chamber) 
-    exc_Xe = Excitation(species, "Xe", get_K_func(species, "Xe", "exc_Xe"), 11.6, chamber) 
+    exc_Xe = Excitation(species, "Xe", lambda T: Kexc(T), 11.6, chamber) 
+    #exc_Xe = Excitation(species, "Xe", get_K_func(species, "Xe", "exc_Xe"), 11.6, chamber) 
 
     #get_K_func(species, "Xe", "exc_Xe")
     #lambda T: Kexc(T)
@@ -50,8 +50,8 @@ def get_species_and_reactions(chamber):
 
     ### Ionisation 
 
-    ion_Xe = Ionisation(species, "Xe", "Xe+", get_K_func(species, "Xe", "Ionization_Xe"), 12.127, chamber) 
-    #ion_Xe = Ionisation(species, "Xe", "Xe+", lambda T: Kiz(T), 12.127, chamber) 
+    #ion_Xe = Ionisation(species, "Xe", "Xe+", get_K_func(species, "Xe", "Ionization_Xe"), 12.127, chamber) 
+    ion_Xe = Ionisation(species, "Xe", "Xe+", lambda T: Kiz(T), 12.127, chamber) 
     #get_K_func(species, "Xe", "Ionization_Xe")
     #lambda T: 2.2384710835071163e-15
     #lambda T: Kiz(T)

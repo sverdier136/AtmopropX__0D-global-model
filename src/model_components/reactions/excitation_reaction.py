@@ -60,7 +60,7 @@ class Excitation(Reaction):
         rate[0] = - e*self.threshold_energy * K * np.prod(state[self.reactives_indices])
 
         self.var_tracker.add_value_to_variable('Kexc', self.rate_constant(state))
-        
+        self.var_tracker.add_value_to_variable('energy_change_excitation', rate[0])
         return rate
 
 
