@@ -10,7 +10,7 @@ from src.model_components.chamber_caracteristics import Chamber
 
 # * Checked by me
 
-class Excitation(Reaction):
+class ThermicDiffusion(Reaction):
     """
         Represents excitation of a molecule by an electron
         where reaction speed is K * n_e * n_mol ...
@@ -21,8 +21,8 @@ class Excitation(Reaction):
     def __init__(self, 
                  species: Species, 
                  molecule_name: str, 
-                 rate_constant, 
-                 threshold_energy: float,
+                 kappa : float,
+                 temp_paroi : float,
                  chamber: Chamber
                  ):
         """
@@ -39,9 +39,8 @@ class Excitation(Reaction):
         """
         # species.names[0] nom des électrons
         super().__init__(species, [species.names[0], molecule_name], [species.names[0], molecule_name], chamber)
-
-        self.threshold_energy = threshold_energy
-        self.rate_constant = rate_constant   # func
+        self.kappa = kappa
+        self.temp_paroi=temp_paroi
         
     @override
     def density_change_rate(self, state: NDArray[float]): # type: ignore
@@ -55,12 +54,13 @@ class Excitation(Reaction):
     @override
     def energy_change_rate(self, state):
         rate = np.zeros(3)
+        lambda_0 = self.chamber.L/2.405 + self.chamber.R/np.pi
 
-        K = self.rate_constant(state)
-        rate[0] -= e*self.threshold_energy * K * np.prod(state[self.reactives_indices])
+        for sp in self.species.species[1:] :   # electron are skipped because handled before
+            rate[sp.nb_atoms] -= self.kappa * e * (state[self.species.nb+sp.nb_atoms] - self.temp_paroi) * self.chamber.S_total/(k_B *lambda_0*self.chamber.V_chamber)
 
-        self.var_tracker.add_value_to_variable('Kexc', self.rate_constant(state))
-        self.var_tracker.add_value_to_variable('energy_change_excitation', rate[0])
+        self.var_tracker.add_value_to_variable_list('energy_change_thermic_diffusion', rate)
+
         return rate
 
 
