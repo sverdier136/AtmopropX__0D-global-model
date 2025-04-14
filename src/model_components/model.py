@@ -55,7 +55,10 @@ class GlobalModel:
     def f_dy(self, t, state):
         """Returns the derivative of the vector 'state' describing the state of plasma.
             'state' has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
-        
+        for idx, var in enumerate(state):
+            if var < 0:
+                print(f"Warning : Negative value in state at t={t}: {state}")
+                state[idx] = 0.0
         try:
             densities = state[:self.species.nb]
             temp = state[self.species.nb:]
@@ -99,7 +102,7 @@ class GlobalModel:
             self.var_tracker.add_value_to_variable_list("energy_", energies, "_atom")
             self.var_tracker.add_value_to_variable('h_L', self.chamber.h_L(self.n_g_tot(state)))
             self.var_tracker.add_value_to_variable('h_R', self.chamber.h_R(self.n_g_tot(state)))
-            print(f"Derivative calculated for state at t={t}: {state}")
+            print(f" t={t}: {state}")
         except Exception as exc:
             print(f"Error in f_dy: {exc}")
             raise e
