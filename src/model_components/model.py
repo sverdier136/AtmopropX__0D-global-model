@@ -181,7 +181,7 @@ class GlobalModel:
             
         return power_array, final_states
     
-    def solve_for_power_fixed(self, power_list, tf = 1):
+    def solve_for_power_fixed(self, power_list, efficiency_list, tf = 1):
         """Calculates for a list of power absorbed in the coil the resulting stationary values of different variables.
             ## Returns
             power_array , list_of(`state` after long time)"""
@@ -191,7 +191,7 @@ class GlobalModel:
         for i, power in enumerate(power_list):
             self.simulation_name = simulation_name + str(i)
             self.var_tracker = VariableTracker("./logs", self.simulation_name+".json")
-            self.electron_heating.power_absorbed_value=power
+            self.electron_heating.power_absorbed_value = power * efficiency_list[i]
 
             sol = self.solve(0, tf)    # TODO Needs some testing
 

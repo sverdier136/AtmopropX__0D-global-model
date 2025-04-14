@@ -25,8 +25,9 @@ model = GlobalModel(species, reactions_list, chamber, electron_heating, simulati
 try:
     print("Solving model...")
     #power_list = np.linspace(0,1600,400)
-    power_list = [0, 400, 800, 1.2e3, 1.6e3]
-    final_state = model.solve_for_power_fixed(power_list, tf = 1)  # TODO Needs some testing
+    power_list = [0, 200, 400, 600, 800, 1e3, 1.2e3, 1.4e3, 1.6e3]
+    efficiency_list = [0.8, 0.7, 0.6, 0.5, 0.45, 0.42, 0.4, 0.35, 0.31]
+    final_state = model.solve_for_power_fixed(power_list, efficiency_list, tf = 1)  # TODO Needs some testing
     print("Model resolved !")
 except Exception as exception:
     print("Entering exception...")

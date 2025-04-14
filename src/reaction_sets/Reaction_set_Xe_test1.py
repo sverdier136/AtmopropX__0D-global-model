@@ -6,8 +6,10 @@ from src.model_components.reactions.ionisation_reaction import Ionisation
 from src.model_components.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
 from src.model_components.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
 from src.model_components.reactions.gas_injection_reaction import GasInjection
-from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower
+from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent
 from src.model_components.reactions.thermic_diffusion import ThermicDiffusion
+from src.model_components.reactions.inelastic_collision import InelasticCollision
+
 
 from src.model_components.specie import Species, Specie
 from src.model_components.constant_rate_calculation import get_K_func
@@ -62,10 +64,16 @@ def get_species_and_reactions(chamber):
     ###Thermic diffusion
     th_Xe = ThermicDiffusion(species,"Xe",0.0057,0.03,chamber)
 
-    reaction_list = [out_Xe, src_Xe, ion_Xe, exc_Xe, ela_elec_Xe, th_Xe] #[exc_Xe, src_Xe] #[exc_Xe, src_Xe, out_Xe] 
+    ### Inelastic Collision
+    in_Xe = InelasticCollision(species, "Xe", chamber)
+
+    reaction_list = [out_Xe, src_Xe, ion_Xe, exc_Xe, ela_elec_Xe, th_Xe, in_Xe] #[exc_Xe, src_Xe] #[exc_Xe, src_Xe, out_Xe] 
     #reaction_list=[ela_elec_Xe]
 
     #electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber) 
-    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 1e3, chamber)
+    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 800, 0.45, chamber)
+    #electron_heating = ElectronHeatingConstantCurrent(species, 500, chamber)
+
+    # print([sp.name for sp in species.species if sp.charge == 0])
 
     return species, reaction_list, electron_heating
