@@ -52,7 +52,7 @@ class ElectronHeatingConstantAbsorbedPower(ElectronHeating):
     and therefore that the current in the coil changes to maintain this power.
     """
 
-    def __init__(self, species: Species, power_absorbed: float, chamber: Chamber):
+    def __init__(self, species: Species, power_absorbed: float, efficiency: float, chamber: Chamber):
         """
         Electrons heating class
             Inputs : 
@@ -61,11 +61,12 @@ class ElectronHeatingConstantAbsorbedPower(ElectronHeating):
                 chamber : instance of class Chamber, contains the chamber characteristics
         """
         super().__init__(species, chamber)
-        self.power_absorbed_value = power_absorbed
+        self.efficiency = efficiency
+        self.power_absorbed_value = power_absorbed * efficiency
 
     @override
     def absorbed_power(self, state, collision_frequencies) -> float:
-        return self.power_absorbed_value
+        return self.power_absorbed_value 
     
 
 
