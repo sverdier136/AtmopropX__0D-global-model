@@ -5,6 +5,7 @@ from src.model_components.specie import Species
 class VariableTracker:
 
     def __init__(self, log_folder_path, log_file_name):
+        self.log_folder_path = log_folder_path
         self.log_file_path = os.path.join(log_folder_path, log_file_name)
         self.tracked_variables = {}
 
@@ -24,8 +25,12 @@ class VariableTracker:
         for i in range(len(state) - species.nb):
             self.add_value_to_variable(prefix + f"temperature_{i}_atom", state[species.nb + i])
 
-    def save_tracked_variables(self):
+    def save_tracked_variables(self, filename=None):
         """Save in json file"""
-        #self.log_file_path = log_file_path
+        if filename is not None :
+            self.log_file_path = os.path.join(self.log_folder_path, filename)
         with open(self.log_file_path, 'w') as file:
             json.dump(self.tracked_variables, file, indent=4)
+
+    def update_filename(self, filename):
+        self.log_file_path = os.path.join(self.log_folder_path, filename)

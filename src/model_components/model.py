@@ -106,7 +106,6 @@ class GlobalModel:
             self.var_tracker.add_value_to_variable('total_ion_thrust', self.total_ion_thrust(state))
             self.var_tracker.add_value_to_variable('total_neutral_thrust', self.total_neutral_thrust(state))
             self.var_tracker.add_value_to_variable('total_thrust', self.total_thrust(state))
-            self.var_tracker.add_value_to_variable('power_absorbed', self.electron_heating.absorbed_power(state, collision_frequencies))
             self.var_tracker.add_value_to_variable('u_B', self.chamber.u_B(state[self.species.nb],2.18e-25))
             self.var_tracker.add_value_to_variable('ion_current', self.total_ion_current(state))
             print(f" t={t}: {state}")
@@ -183,11 +182,11 @@ class GlobalModel:
 
         for i, I_coil in enumerate(coil_currents):
             self.simulation_name = simulation_name + str(i)
-            self.var_tracker = VariableTracker("./logs", self.simulation_name+".json")
+            self.var_tracker.update_filename(self.simulation_name+".json")
 
             self.electron_heating.coil_current = I_coil
 
-            sol = self.solve(t0, tf, initial_state)    # TODO Needs some testing
+            sol = self.solve(t0, tf, initial_state) 
 
             final_state = sol.y[:, -1]
 
@@ -195,8 +194,7 @@ class GlobalModel:
             for reac in self.reaction_set:
                 if isinstance(reac, GeneralElasticCollision) :
                     sp, freq = reac.colliding_specie_and_collision_frequency(final_state)
-                    collision_frequencies[sp.index]  = freq
-            eps_p = self.electron_heating.eps_p(collision_frequencies, final_state)
+                    collision_frequencies[sp.index]  += freq
 
             # calculation of P_abs : the power given by the antenna to the plasma
 
@@ -216,7 +214,7 @@ class GlobalModel:
 
         for i, power in enumerate(power_list):
             self.simulation_name = simulation_name + str(i)
-            self.var_tracker = VariableTracker("./logs", self.simulation_name+".json")
+            self.var_tracker.update_filename(self.simulation_name+".json")
             self.electron_heating.power_absorbed_value = power * efficiency_list[i]
 
             sol = self.solve(t0, tf, initial_state)    # TODO Needs some testing
