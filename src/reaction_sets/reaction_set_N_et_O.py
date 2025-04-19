@@ -75,7 +75,6 @@ def get_species_and_reactions(chamber):
 #  ██▀ █   ▄▀▄ ▄▀▀ ▀█▀ █ ▄▀▀   ▄▀▀ ▄▀▄ █   █   █ ▄▀▀ █ ▄▀▄ █▄ █ ▄▀▀
 #  █▄▄ █▄▄ █▀█ ▄██  █  █ ▀▄▄   ▀▄▄ ▀▄▀ █▄▄ █▄▄ █ ▄██ █ ▀▄▀ █ ▀█ ▄██  # * complete
     ela_O2 = ElasticCollisionWithElectron(species_list, "O2", get_K_func(species_list, "O2", "ela_O2"), 0, chamber)
-    #ela_elec_O = ElasticCollisionWithElectron(species_list, "O", get_K_func(species_list, "O", "ela_elec_O"), 0, chamber)
     ela_N = ElasticCollisionWithElectron(species_list, "N", get_K_func(species_list, "N", "ela_N"), 0, chamber)
     ela_O = ElasticCollisionWithElectron(species_list, "O", get_K_func(species_list, "O", "ela_O"), 0, chamber)
     ela_N2 = ElasticCollisionWithElectron(species_list, "N2", get_K_func(species_list, "N2", "ela_N2"), 0, chamber)

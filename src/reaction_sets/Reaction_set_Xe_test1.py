@@ -6,7 +6,7 @@ from src.model_components.reactions.ionisation_reaction import Ionisation
 from src.model_components.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
 from src.model_components.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
 from src.model_components.reactions.gas_injection_reaction import GasInjection
-from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent
+from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent, ElectronHeatingConstantRFPower
 from src.model_components.reactions.thermic_diffusion import ThermicDiffusion
 from src.model_components.reactions.inelastic_collision import InelasticCollision
 
@@ -19,7 +19,7 @@ def get_species_and_reactions(chamber):
                     
     species = Species([Specie("e", m_e, -e, 0, 3/2), Specie("Xe", 2.18e-25, 0, 1, 3/2), Specie("Xe+", 2.18e-25, e, 1, 3/2)])
 
-    init_state = [1e18, 1e22, 1e18, 2.7, 0.03, 0.001]
+    init_state = [1e14, 1e22, 1e14, 2.7, 0.03, 0.001]
 
     def Kexc(state):
         T=state[species.nb]
@@ -44,7 +44,7 @@ def get_species_and_reactions(chamber):
     src_Xe = GasInjection(species, [0.0, 1.2e19, 0], 0.03, chamber) 
 
     ### Sortie de Xe à travers les grilles
-    out_Xe = FluxToWallsAndThroughGrids(species, "Xe", chamber) 
+    out_Xe = FluxToWallsAndThroughGrids(species, chamber) 
     #get_K_func(species, "Xe", "out_Xe")
 
     def Kiz(state):
@@ -67,13 +67,13 @@ def get_species_and_reactions(chamber):
     th_Xe = ThermicDiffusion(species,"Xe",0.0057,0.03,chamber)
 
     ### Inelastic Collision
-    in_Xe = InelasticCollision(species, "Xe", chamber)
+    in_Xe = InelasticCollision(species, chamber)
 
     reaction_list = [out_Xe, src_Xe, ion_Xe, exc_Xe, ela_elec_Xe, th_Xe, in_Xe] #[exc_Xe, src_Xe] #[exc_Xe, src_Xe, out_Xe] 
     #reaction_list=[ela_elec_Xe]
 
     #electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber) 
-    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, 0.45, chamber)
+    electron_heating = ElectronHeatingConstantRFPower(species, 500, chamber)
     #electron_heating = ElectronHeatingConstantCurrent(species, 10, chamber)
 
     # print([sp.name for sp in species.species if sp.charge == 0])

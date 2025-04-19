@@ -73,8 +73,6 @@ class ElectronHeatingConstantAbsorbedPower(ElectronHeating):
 
 
 
-
-# ! Non codé, En cours
 class ElectronHeatingConstantCurrent(ElectronHeating):
     """
     Represents the heating of electrons by the coil. It is supposed that the power transmitted to the electrons is constant 
@@ -143,4 +141,66 @@ class ElectronHeatingConstantCurrent(ElectronHeating):
         absorbed_power = self.P_abs(self.R_ind( self.eps_p(collision_frequencies, state)  ))
         self.var_tracker.add_value_to_variable("absorbed_power", absorbed_power)
         #self.var_tracker.add_value_to_variable("R_ind", self.R_ind(self.eps_p(collision_frequencies, state)))
+        return absorbed_power
+    
+
+
+
+
+
+
+class ElectronHeatingConstantRFPower(ElectronHeating):
+    """
+    Represents the heating of electrons by the coil. It is supposed that the power transmitted to the electrons is constant 
+    and therefore that the current in the coil changes to maintain this power.
+    """
+
+    def __init__(self, species: Species, power_RF: float, chamber: Chamber):
+        """
+        Electrons heating class
+            Inputs : 
+                species : instance of class Species, lists all species present 
+                power_RF : power absorbed by the electrons
+                chamber : instance of class Chamber, contains the chamber characteristics
+        """
+        super().__init__(species, chamber)
+        self.power_RF = power_RF
+
+    def normalised_concentrations(self , state: NDArray[np.float64]) :
+        """Returns normalized concentrations (such that they sum up to 1)"""
+        return state[:self.species.nb]/np.sum(state[:self.species.nb])
+
+    def P_abs(self , R_ind):
+        return 
+    
+    def R_ind(self, eps_p):
+        '''plamsma resistance, used in calculating the power P_abs'''
+
+        k_p = (self.chamber.omega / c_light) * np.sqrt(eps_p)
+        a = 2 * pi * self.chamber.N**2 / (self.chamber.L * self.chamber.omega * eps_0)
+        #jv are Besel functions
+        b = 1j * k_p * self.chamber.R * jv(1, k_p * self.chamber.R) / (eps_p * jv(0, k_p * self.chamber.R))
+        R_ind = a * np.real(b)
+        self.var_tracker.add_value_to_variable("R_ind", R_ind)
+        self.var_tracker.add_value_to_variable("R_ind_a", a)
+        self.var_tracker.add_value_to_variable("R_ind_b", np.real(b))
+        return R_ind
+    
+    def eps_p (self, collision_frequencies , state) :
+        """Calcule la permittivité diélectrique relative due à toutes les réactions de collisions elastiques elctron-neutre. Ces réactions sont considérées séparément par chacun des eps_i
+            collision_frequencies : np.array containing the collision frequencies for each specie in the order in which they appear in self.species"""
+        omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
+        
+        eps_p = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*np.sum(collision_frequencies)))
+        self.var_tracker.add_value_to_variable("eps_p_real", np.real(eps_p))
+        self.var_tracker.add_value_to_variable("eps_p_imag", np.imag(eps_p))
+        return eps_p
+
+    @override
+    def absorbed_power(self, state, collision_frequencies) -> float:
+        R_ind = self.R_ind(self.eps_p(collision_frequencies, state))
+
+        absorbed_power = self.power_RF * R_ind / (R_ind + self.chamber.R_coil)
+        self.var_tracker.add_value_to_variable("power_transfer_efficiency", R_ind / (R_ind + self.chamber.R_coil))
+        self.var_tracker.add_value_to_variable("absorbed_power", absorbed_power)
         return absorbed_power
