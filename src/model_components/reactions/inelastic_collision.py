@@ -12,35 +12,29 @@ from src.model_components.chamber_caracteristics import Chamber
 
 class InelasticCollision(Reaction):
     """
-        Represents excitation of a molecule by an electron
-        where reaction speed is K * n_e * n_mol ...
+        Represents the collisions between ions accelerated towards the walls and the neutral gas.
         Works for 3 temperatures : that of electrons, monoatomic and diatomic particles
 
     """
 
     def __init__(self, 
                  species: Species, 
-                 molecule_name: str, 
                  chamber: Chamber
                  ):
         """
-        Reaction class
+        Represents the collisions between ions accelerated towards the walls and the neutral gas.
+        Takes all ions and all neutrals into account.
+        Works for 3 temperatures : that of electrons, monoatomic and diatomic particles
         
         Inputs : 
             species : instance of class Species, lists all species present 
-            reactives : list with all reactives names
-            products : list with all products names
-            rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
-            energy_threshold : energy threshold of electron so that reaction occurs
-            stoechio_coeffs : stoechiometric coefficients always positive
-            spectators : list with spectators names (used to print reaction)
+            chamber : instance of class Chamber, contains the chamber characteristics
         """
+        self.charged_sp = [sp for sp in species if sp.charge != 0]
+        self.non_charged_sp = [sp for sp in species if sp.charge == 0]
         # species.names[0] nom des électrons
-        super().__init__(species, [species.names[0], molecule_name], [species.names[0], molecule_name], chamber)
-        self.charged_sp = [sp for sp in self.species.species if sp.charge != 0]
-        self.non_charged_sp = [sp for sp in self.species.species if sp.charge == 0]
-        print([sp.name for sp in self.species.species if sp.charge != 0])
-
+        super().__init__(species, species.names[1:], species.names[1:], chamber)
+        
     @override
     def density_change_rate(self, state: NDArray[float]): # type: ignore
         """Returns an np.array with the change rate for each species due to this reaction

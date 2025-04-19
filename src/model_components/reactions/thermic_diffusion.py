@@ -12,8 +12,7 @@ from src.model_components.chamber_caracteristics import Chamber
 
 class ThermicDiffusion(Reaction):
     """
-        Represents excitation of a molecule by an electron
-        where reaction speed is K * n_e * n_mol ...
+        Represents change in temperature due to thermic exchange with the walls
         Works for 3 temperatures : that of electrons, monoatomic and diatomic particles
 
     """
@@ -26,7 +25,7 @@ class ThermicDiffusion(Reaction):
                  chamber: Chamber
                  ):
         """
-        Reaction class
+        Thermic diffusion
         
         Inputs : 
             species : instance of class Species, lists all species present 
@@ -43,7 +42,7 @@ class ThermicDiffusion(Reaction):
         self.temp_paroi=temp_paroi
         
     @override
-    def density_change_rate(self, state: NDArray[float]): # type: ignore
+    def density_change_rate(self, state: NDArray[np.float64]):
         """Returns an np.array with the change rate for each species due to this reaction
         state has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
         rate = np.zeros(self.species.nb)

@@ -14,22 +14,20 @@ from src.model_components.chamber_caracteristics import Chamber
 
 class FluxToWallsAndThroughGrids(Reaction):
     """
-    Flux of electrons, ions and neutrals to the grids OR flux of ions and neutrals to the walls.
+    Flux of electrons, ions and neutrals to the grids and flux of ions and neutrals to the walls.
     Works with 3 temperatures : Te, Tmono, Tdiat
-    In reactives, electron must be in first position and colliding_specie next.
     """
 
-    def __init__(self, species: Species, colliding_specie: str, chamber: Chamber):
+    def __init__(self, species: Species, chamber: Chamber):
         """
         FluxToWallsAndThroughGrids class
             Inputs : 
                 species : instance of class Species, lists all species present 
-                colliding_specie : name of specie that collides with an electron. Must be a string !
                 rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
                 energy_threshold : energy threshold of electron so that reaction occurs
                 chamber : chamber parameters of the chamber in which the reactions are taking place
         """
-        super().__init__(species, [species.names[0], colliding_specie], [species.names[0], colliding_specie], chamber)
+        super().__init__(species, [], species.names, chamber)
         #self.rate_constant = rate_constant
         #self.energy_treshold = energy_treshold
 

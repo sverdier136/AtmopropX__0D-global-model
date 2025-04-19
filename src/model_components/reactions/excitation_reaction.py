@@ -26,16 +26,15 @@ class Excitation(Reaction):
                  chamber: Chamber
                  ):
         """
-        Reaction class
+        Represents excitation of a molecule by an electron
+        where reaction speed is K * n_e * n_mol ...
         
         Inputs : 
             species : instance of class Species, lists all species present 
-            reactives : list with all reactives names
-            products : list with all products names
+            molecule_name : name of molecule that will be excited. Must be a string !
             rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
             energy_threshold : energy threshold of electron so that reaction occurs
-            stoechio_coeffs : stoechiometric coefficients always positive
-            spectators : list with spectators names (used to print reaction)
+            chamber : instance of class Chamber, contains the chamber characteristics
         """
         # species.names[0] nom des électrons
         super().__init__(species, [species.names[0], molecule_name], [species.names[0], molecule_name], chamber)
