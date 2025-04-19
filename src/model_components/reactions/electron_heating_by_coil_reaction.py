@@ -166,12 +166,6 @@ class ElectronHeatingConstantRFPower(ElectronHeating):
         super().__init__(species, chamber)
         self.power_RF = power_RF
 
-    def normalised_concentrations(self , state: NDArray[np.float64]) :
-        """Returns normalized concentrations (such that they sum up to 1)"""
-        return state[:self.species.nb]/np.sum(state[:self.species.nb])
-
-    def P_abs(self , R_ind):
-        return 
     
     def R_ind(self, eps_p):
         '''plamsma resistance, used in calculating the power P_abs'''

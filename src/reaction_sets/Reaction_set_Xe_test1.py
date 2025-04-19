@@ -73,7 +73,7 @@ def get_species_and_reactions(chamber):
     #reaction_list=[ela_elec_Xe]
 
     #electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber) 
-    electron_heating = ElectronHeatingConstantRFPower(species, 500, chamber)
+    electron_heating = ElectronHeatingConstantRFPower(species, 1, chamber)
     #electron_heating = ElectronHeatingConstantCurrent(species, 10, chamber)
 
     # print([sp.name for sp in species.species if sp.charge == 0])

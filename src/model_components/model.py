@@ -112,8 +112,7 @@ class GlobalModel:
         except Exception as exc:
             print(f"Error in f_dy with state = {state}: \n {exc}")
             raise exc
-
-        #self.var_tracker.add_value_to_variable("collision_frequencies", collision_frequencies)
+        dy = np.where(state > 1e-5, dy, 0)
         return dy
     
 # TODO a coder
@@ -231,6 +230,27 @@ class GlobalModel:
             final_states[i] = final_state
             
         return final_states
+    
+    def solve_for_RF_power_fixed(self, power_list, t0, tf, initial_state):
+        """Calculates for a list of power absorbed in the coil the resulting stationary values of different variables.
+            ## Returns
+            power_array , list_of(`state` after long time)"""
+        final_states = np.zeros((len(power_list), self.species.nb+3))  #shape = (y,x)
+        simulation_name = self.simulation_name
+
+        for i, power in enumerate(power_list):
+            self.simulation_name = simulation_name + str(i)
+            self.var_tracker.update_filename(self.simulation_name+".json")
+            self.electron_heating.power_RF = power
+
+            sol = self.solve(t0, tf, initial_state) 
+
+            final_state = sol.y[:, -1]
+
+            final_states[i] = final_state
+            
+        return final_states
+    
     
 
     
