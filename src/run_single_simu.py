@@ -11,7 +11,7 @@ from src.reaction_sets.Reaction_set_Xe_test1 import get_species_and_reactions
 
 chamber = Chamber(config_dict)
 species, initial_state, reactions_list, electron_heating = get_species_and_reactions(chamber)
-model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="all_reac_N_O")
+model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="all_reac_Prf_cst")
 
 #print(chamber.V_chamber)
 # print(chamber.S_eff_total(chamber.n_g_0))

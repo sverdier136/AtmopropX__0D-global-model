@@ -30,8 +30,8 @@ class InelasticCollision(Reaction):
             species : instance of class Species, lists all species present 
             chamber : instance of class Chamber, contains the chamber characteristics
         """
-        self.charged_sp = [sp for sp in species if sp.charge != 0]
-        self.non_charged_sp = [sp for sp in species if sp.charge == 0]
+        self.charged_sp = [sp for sp in species.species if sp.charge != 0]
+        self.non_charged_sp = [sp for sp in species.species if sp.charge == 0]
         # species.names[0] nom des électrons
         super().__init__(species, species.names[1:], species.names[1:], chamber)
         

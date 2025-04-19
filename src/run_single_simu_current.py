@@ -30,7 +30,7 @@ try:
     coil_currents = [2, 3, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
     #efficiency_list = [0.78, 0.72, 0.68, 0.6, 0.5, 0.48, 0.45, 0.41, 0.37, 0.35]
     #efficiency_list = [0.79, 0.75, 0.67, 0.58, 0.53, 0.46, 0.42, 0.4, 0.37, 0.35]
-    final_state = model.solve_for_I_coil(coil_currents, t0, tf, initial_state) # TODO Needs some testing
+    power_array, final_state = model.solve_for_I_coil(coil_currents, t0, tf, initial_state) # TODO Needs some testing
     print("Model resolved !")
 except Exception as exception:
     print("Entering exception...")
