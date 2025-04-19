@@ -39,7 +39,7 @@ def get_species_and_reactions(chamber):
     exc7_N2 = Excitation(species_list, "N2", get_K_func(species_list, "N2", "exc7_N2"), 8.89, chamber)
     exc8_N2 = Excitation(species_list, "N2", get_K_func(species_list, "N2", "exc8_N2"), 12.50, chamber)
     exc9_N2 = Excitation(species_list, "N2", get_K_func(species_list, "N2", "exc9_N2"), 12.90, chamber)
-    #exc10_N2 = Excitation(species_list, "N2", get_K_func(species_list, "N2", "exc10_N2"), 12.10, chamber)
+    # -- N'existe pas a priori exc10_N2 = Excitation(species_list, "N2", get_K_func(species_list, "N2", "exc10_N2"), 12.10, chamber)
     exc11_N2 = Excitation(species_list, "N2", get_K_func(species_list, "N2", "exc11_N2"), 12.90, chamber)
     exc12_N2 = Excitation(species_list, "N2", get_K_func(species_list, "N2", "exc12_N2"), 11.00, chamber)
     exc13_N2 = Excitation(species_list, "N2", get_K_func(species_list, "N2", "exc13_N2"), 11.90, chamber)
@@ -56,15 +56,15 @@ def get_species_and_reactions(chamber):
     exc3_O2 = Excitation(species_list, "O2", get_K_func(species_list, "O2", "exc3_O2"), 4.50, chamber)
     exc4_O2 = Excitation(species_list, "O2", get_K_func(species_list, "O2", "exc4_O2"), 7.10, chamber)
 # O
-    # exc1_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc1_O"), 1.97, chamber)
-    # exc2_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc2_O"), 4.19, chamber)
-    # exc3_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc3_O"), 9.52, chamber)
+    exc1_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc1_O"), 1.97, chamber)
+    exc2_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc2_O"), 4.19, chamber)
+    exc3_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc3_O"), 9.52, chamber)
     exc4_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc4_O"), 12, chamber)
     exc5_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc5_O"), 12, chamber)
     exc6_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc6_O"), 12, chamber)
     exc7_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc7_O"), 12, chamber)
     exc8_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc8_O"), 12, chamber)
-    #exc9_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc9_O"), 12, chamber)
+    exc9_O = Excitation(species_list, "O", get_K_func(species_list, "O", "exc9_O"), 12, chamber)
     
 #  █ ▄▀▄ █▄ █ █ ▄▀▀ ▄▀▄ ▀█▀ █ ▄▀▄ █▄ █
 #  █ ▀▄▀ █ ▀█ █ ▄██ █▀█  █  █ ▀▄▀ █ ▀█
@@ -73,7 +73,7 @@ def get_species_and_reactions(chamber):
     ion_O2 = Ionisation(species_list, "O2", "O2+", get_K_func(species_list, "O2", "ion_O2"), 12.10, chamber)
 
 #  ██▀ █   ▄▀▄ ▄▀▀ ▀█▀ █ ▄▀▀   ▄▀▀ ▄▀▄ █   █   █ ▄▀▀ █ ▄▀▄ █▄ █ ▄▀▀
-#  █▄▄ █▄▄ █▀█ ▄██  █  █ ▀▄▄   ▀▄▄ ▀▄▀ █▄▄ █▄▄ █ ▄██ █ ▀▄▀ █ ▀█ ▄██
+#  █▄▄ █▄▄ █▀█ ▄██  █  █ ▀▄▄   ▀▄▄ ▀▄▀ █▄▄ █▄▄ █ ▄██ █ ▀▄▀ █ ▀█ ▄██  # * complete
     ela_O2 = ElasticCollisionWithElectron(species_list, "O2", get_K_func(species_list, "O2", "ela_O2"), 0, chamber)
     #ela_elec_O = ElasticCollisionWithElectron(species_list, "O", get_K_func(species_list, "O", "ela_elec_O"), 0, chamber)
     ela_N = ElasticCollisionWithElectron(species_list, "N", get_K_func(species_list, "N", "ela_N"), 0, chamber)
@@ -83,29 +83,30 @@ def get_species_and_reactions(chamber):
 
 #  █▀ █   █ █ ▀▄▀ ██▀ ▄▀▀   ▀█▀ ▄▀▄   ▀█▀ █▄█ ██▀   █   █ ▄▀▄ █   █   ▄▀▀   ▄▀▄ █▄ █ █▀▄   ▀█▀ █▄█ █▀▄ ▄▀▄ █ █ ▄▀  █▄█   ▀█▀ █▄█ ██▀   ▄▀  █▀▄ █ █▀▄ ▄▀▀
 #  █▀ █▄▄ ▀▄█ █ █ █▄▄ ▄██    █  ▀▄▀    █  █ █ █▄▄   ▀▄▀▄▀ █▀█ █▄▄ █▄▄ ▄██   █▀█ █ ▀█ █▄▀    █  █ █ █▀▄ ▀▄▀ ▀▄█ ▀▄█ █ █    █  █ █ █▄▄   ▀▄█ █▀▄ █ █▄▀ ▄██
-    out_N = FluxToWallsAndThroughGrids(species_list, "N", chamber) #la colliding specie ne sert à rien visiblement
+    out_flux = FluxToWallsAndThroughGrids(species_list, chamber)
 
 
 #  ▄▀  ▄▀▄ ▄▀▀   █ █▄ █   █ ██▀ ▄▀▀ ▀█▀ █ ▄▀▄ █▄ █
 #  ▀▄█ █▀█ ▄██   █ █ ▀█ ▀▄█ █▄▄ ▀▄▄  █  █ ▀▄▀ █ ▀█
     injection_rates = [] #à revoir
     T_injection = 0.03 #à revoir
-    src_gaz = GasInjection(species_list, injection_rates, T_injection, chamber)
+    gas_injection = GasInjection(species_list, injection_rates, T_injection, chamber)
 
 
 #  █ █▄ █ ██▀ █   ▄▀▄ ▄▀▀ ▀█▀ █ ▄▀▀   ▄▀▀ ▄▀▄ █   █   █ ▄▀▀ █ ▄▀▄ █▄ █ ▄▀▀   █   █ █ ▀█▀ █▄█   █ ▄▀▄ █▄ █ ▄▀▀   ▄▀▄ ▄▀▀ ▄▀▀ ██▀ █   ██▀ █▀▄ ▄▀▄ ▀█▀ ██▀ █▀▄   ▀█▀ ▄▀▄   ▀█▀ █▄█ ██▀   █   █ ▄▀▄ █   █   ▄▀▀
 #  █ █ ▀█ █▄▄ █▄▄ █▀█ ▄██  █  █ ▀▄▄   ▀▄▄ ▀▄▀ █▄▄ █▄▄ █ ▄██ █ ▀▄▀ █ ▀█ ▄██   ▀▄▀▄▀ █  █  █ █   █ ▀▄▀ █ ▀█ ▄██   █▀█ ▀▄▄ ▀▄▄ █▄▄ █▄▄ █▄▄ █▀▄ █▀█  █  █▄▄ █▄▀    █  ▀▄▀    █  █ █ █▄▄   ▀▄▀▄▀ █▀█ █▄▄ █▄▄ ▄██
-    in_gaz = InelasticCollision(species_list, "N", chamber)
+    inelastic_collisions = InelasticCollision(species_list, chamber)
 
 #  █▀▄ █ ▄▀▀ ▄▀▀ ▄▀▄ ▄▀▀ █ ▄▀▄ ▀█▀ █ ▄▀▄ █▄ █
 #  █▄▀ █ ▄██ ▄██ ▀▄▀ ▀▄▄ █ █▀█  █  █ ▀▄▀ █ ▀█
-    diss1_O2 = Dissociation(species_list, ["O2"], ["O"], get_K_func(species_list, "O2", "diss1_O2"), 6.12, [1., 2.], chamber)
-    diss2_O2 = Dissociation(species_list, ["O2"], ["O"], get_K_func(species_list, "O2", "diss2_O2"), 8.40, [1., 2.], chamber)
-    diss_N2 = Dissociation(species_list, ["N2"], ["N"], get_K_func(species_list, "N2", "diss_N2"), 9.76, [1., 2.], chamber)
+    # Delta_E = 0.5 selon pifomètre d'Esteves ( = monoatomic_energy_excess )
+    diss1_O2 = Dissociation(species_list, "O2", "O", get_K_func(species_list, "O2", "diss1_O2"), 6.12, 0.5, chamber)
+    diss2_O2 = Dissociation(species_list, ["O2"], ["O"], get_K_func(species_list, "O2", "diss2_O2"), 8.40, 0.5, chamber)
+    diss_N2 = Dissociation(species_list, ["N2"], ["N"], get_K_func(species_list, "N2", "diss_N2"), 9.76, 0.5, chamber)
 
 #  ▀█▀ █▄█ ██▀ █▀▄ █▄ ▄█ █ ▄▀▀   █▀▄ █ █▀ █▀ █ █ ▄▀▀ █ ▄▀▄ █▄ █  
 #   █  █ █ █▄▄ █▀▄ █ ▀ █ █ ▀▄▄   █▄▀ █ █▀ █▀ ▀▄█ ▄██ █ ▀▄▀ █ ▀█  
-    #th_O2 = ThermicDiffusion(species_list, "O2", 0.005, 0.03, chamber) #revoir le kappa, on n'a pas besoin de la colliding specie
+    th_O2 = ThermicDiffusion(species_list, "O2", 0.005, 0.03, chamber) #revoir le kappa, on n'a pas besoin de la colliding specie
     # th_N2 = ThermicDiffusion(species_list, "N2", 0.005, 0.03, chamber)
     # th_O = ThermicDiffusion(species_list, "O", 0.005, 0.03, chamber)
     # th_N = ThermicDiffusion(species_list, "N", 0.005, 0.03, chamber)
@@ -114,9 +115,9 @@ def get_species_and_reactions(chamber):
     
     # Reaction list
     reaction_list = [
-        exc1_N2, exc2_N2, exc3_N2, exc4_N2, exc5_N2, exc6_N2, exc7_N2, exc8_N2, exc9_N2, #exc10_N2,
-        exc11_N2, exc12_N2, exc13_N2, exc14_N2, ion_N2, exc1_N, #exc2_N, ela_elec_N, ela_elec_N2, ela_elec_O2
-        ion_N, exc1_O2, exc2_O2, exc3_O2, exc4_O2, ion_O2, #exc1_O, exc2_O,  exc9_O, ela_elec_O, exc3_O,
+        exc1_N2, exc2_N2, exc3_N2, exc4_N2, exc5_N2, exc6_N2, exc7_N2, exc8_N2, exc9_N2, # exc10_N2, n'esxiste pas a priori
+        exc11_N2, exc12_N2, exc13_N2, exc14_N2, ion_N2, exc1_N, exc2_N, ela_N, ela_N2, ela_O2,
+        ion_N, exc1_O2, exc2_O2, exc3_O2, exc4_O2, ion_O2, exc1_O, exc2_O,  exc9_O, ela_O, exc3_O,
         exc4_O, exc5_O, exc6_O, exc7_O, exc8_O
     ]
 
