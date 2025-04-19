@@ -23,7 +23,7 @@ model = GlobalModel(species, reactions_list, chamber, electron_heating, simulati
 
 # Solve the model
 try:
-    print("Solving model...")
+    print("Solving model...") 
     #power_list = np.linspace(0,1600,400)
     t0, tf = 0, 1
     power_list = [5, 50, 100, 200, 400, 600, 800, 1e3, 1.2e3, 1.4e3, 1.6e3]
