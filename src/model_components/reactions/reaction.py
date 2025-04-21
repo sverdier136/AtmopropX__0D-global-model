@@ -92,7 +92,7 @@ class Reaction:
 
         reactives_str = format_species(self.reactives, self.reactives_indices)
         products_str = format_species(self.products, self.products_indices)
-        return f"{reactives_str} -> {products_str}          K_r = {self.rate_constant.__name__}"
+        return f"{reactives_str} -> {products_str} "
     
     def set_var_tracker(self, tracker: VariableTracker):
         """Sets the variable tracker for this reaction"""

@@ -51,16 +51,7 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
         self.var_tracker.add_value_to_variable("energy_change_elastic_collision", energy_change)
 
         return rate
-    
-    @override
-    def get_eps_i(self, state) :
-        """ Renvoye la permittivité diélectrique relative due à une réaction de collision ellastique entre un électron et une espèce neutre"""
-        # plasma pulsation squared
-        omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
 
-        nu_m_i = state[0] * self.rate_constant(state)
-
-        return 1 - (omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*nu_m_i)))
     
     @override
     def colliding_specie_and_collision_frequency(self, state: NDArray[np.float64]):

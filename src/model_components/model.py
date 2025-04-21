@@ -42,6 +42,7 @@ class GlobalModel:
         else:
             self.electron_heating = electron_heating
         self.electron_heating.set_var_tracker(self.var_tracker) 
+        np.set_printoptions(edgeitems=3, infstr='inf',linewidth=200)
 
 
     def eval_property(self, func, sol):
@@ -55,10 +56,14 @@ class GlobalModel:
     def f_dy(self, t, state):
         """Returns the derivative of the vector 'state' describing the state of plasma.
             'state' has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
-        for idx, var in enumerate(state):
+        for idx, var in enumerate(state[:self.species.nb]):
             if var < 0:
-                print(f"Warning : Negative value in state at t={t}: {state}")
+                print(f"Warning : Negative density in state at t={t}: {state}")
                 state[idx] = 0.0
+        for var in state[self.species.nb:]:
+            if var < 0:
+                raise ValueError(f"Negative temperature in state at t={t}: {state}")
+
         try:
             densities = state[:self.species.nb]
             temp = state[self.species.nb:]
@@ -67,17 +72,20 @@ class GlobalModel:
             dy_densities = np.zeros(self.species.nb)
             dy_energies = np.zeros(3)
 
-            collision_frequencies = np.zeros(self.species.nb)
+            collision_frequency = 0.0
             for reac in self.reaction_set:
-                dy_densities += reac.density_change_rate(state)
+                density_change = reac.density_change_rate(state)
+                if abs(density_change[0] - density_change[2])/abs(density_change[0] + 1e-20) > 1e-5:
+                    raise Exception(f"Warning : No equality for {type(reac)}, {reac} with : \n {density_change}")
+                dy_densities += density_change
                 dy_energies += reac.energy_change_rate(state)
                 if isinstance(reac, GeneralElasticCollision) :
                     sp, freq = reac.colliding_specie_and_collision_frequency(state)
-                    collision_frequencies[sp.index] += freq
+                    collision_frequency += freq
 
-            self.var_tracker.add_value_to_variable_list("collision_frequencies", collision_frequencies)
+            self.var_tracker.add_value_to_variable("collision_frequency", collision_frequency)
             # Energy given to the electrons via the coil
-            volumic_power_absorbed = self.electron_heating.absorbed_power(state, collision_frequencies) / self.chamber.V_chamber
+            volumic_power_absorbed = self.electron_heating.absorbed_power(state, collision_frequency) / self.chamber.V_chamber
             dy_energies[0] += volumic_power_absorbed
             self.var_tracker.add_value_to_variable('power', volumic_power_absorbed)
 
@@ -108,7 +116,9 @@ class GlobalModel:
             self.var_tracker.add_value_to_variable('total_thrust', self.total_thrust(state))
             self.var_tracker.add_value_to_variable('u_B', self.chamber.u_B(state[self.species.nb],2.18e-25))
             self.var_tracker.add_value_to_variable('ion_current', self.total_ion_current(state))
-            print(f" t={t}: {state}")
+            print(f" t={t}")
+            print(state)
+            print(dy)
         except Exception as exc:
             print(f"Error in f_dy with state = {state}: \n {exc}")
             raise exc
@@ -165,7 +175,7 @@ class GlobalModel:
     def solve(self, t0, tf, initial_state):
         #y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
         y0 = np.array(initial_state)  #np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
-        sol = solve_ivp(self.f_dy, (t0, tf), y0, method='BDF', rtol=1e-8, atol=1e-15, first_step=5e-10, min_step=1e-15)    # , max_step=1e-7
+        sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA', rtol=1e-4, atol=1e-15, first_step=5e-10, min_step=1e-15)    # , max_step=1e-7
         #log_file_path=self.simulation_name
         self.var_tracker.save_tracked_variables()
         return sol

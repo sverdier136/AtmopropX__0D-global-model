@@ -30,7 +30,7 @@ class ElectronHeating:
         self.chamber = chamber
         self.var_tracker = None
 
-    def absorbed_power(self, state, collision_frequencies) -> float:
+    def absorbed_power(self, state, collision_frequency) -> float:
         """
         Returns the absorbed power by the electrons
         """
@@ -65,7 +65,7 @@ class ElectronHeatingConstantAbsorbedPower(ElectronHeating):
         self.power_absorbed_value = power_absorbed * efficiency
 
     @override
-    def absorbed_power(self, state, collision_frequencies) -> float:
+    def absorbed_power(self, state, collision_frequency) -> float:
         return self.power_absorbed_value 
     
 
@@ -113,32 +113,24 @@ class ElectronHeatingConstantCurrent(ElectronHeating):
         self.var_tracker.add_value_to_variable("R_ind_b", np.real(b))
         return R_ind
     
-    def eps_p (self, collision_frequencies , state) :
+    def eps_p (self, collision_frequency , state) :
         """Calcule la permittivité diélectrique relative due à toutes les réactions de collisions elastiques elctron-neutre. Ces réactions sont considérées séparément par chacun des eps_i
             collision_frequencies : np.array containing the collision frequencies for each specie in the order in which they appear in self.species"""
         #fonction utilisée dans f_dy
-        normalized_c = self.normalised_concentrations(state)
         omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
-        # epsilons_i = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*collision_frequencies))
-
-        # def equation(x):
-        #     x = x[0] + x[1]*1j     
-        #     value = np.sum(normalized_c*(epsilons_i-1)/(epsilons_i + 2*x)) + (1-x)/(3*x)   
-        #     return [np.real(value), np.imag(value)]
-        # eps_p = fsolve(equation , [1, 0.01])
-        # eps_p = eps_p[0]+eps_p[1]*1j
-        eps_p = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*np.sum(collision_frequencies)))
+        
+        eps_p = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*collision_frequency))
         self.var_tracker.add_value_to_variable("eps_p_real", np.real(eps_p))
         self.var_tracker.add_value_to_variable("eps_p_imag", np.imag(eps_p))
         return eps_p
 
-    def power_rf(self, state, collision_frequencies):
-        power_rf = self.P_RF(self.R_ind( self.eps_p(collision_frequencies, state)  ))
+    def power_rf(self, state, collision_frequency) -> float:
+        power_rf = self.P_RF(self.R_ind( self.eps_p(collision_frequency, state)  ))
         return power_rf
 
     @override
-    def absorbed_power(self, state, collision_frequencies) -> float:
-        absorbed_power = self.P_abs(self.R_ind( self.eps_p(collision_frequencies, state)  ))
+    def absorbed_power(self, state, collision_frequency) -> float:
+        absorbed_power = self.P_abs(self.R_ind( self.eps_p(collision_frequency, state)  ))
         self.var_tracker.add_value_to_variable("absorbed_power", absorbed_power)
         #self.var_tracker.add_value_to_variable("R_ind", self.R_ind(self.eps_p(collision_frequencies, state)))
         return absorbed_power
@@ -180,19 +172,19 @@ class ElectronHeatingConstantRFPower(ElectronHeating):
         self.var_tracker.add_value_to_variable("R_ind_b", np.real(b))
         return R_ind
     
-    def eps_p (self, collision_frequencies , state) :
+    def eps_p (self, collision_frequency , state) :
         """Calcule la permittivité diélectrique relative due à toutes les réactions de collisions elastiques elctron-neutre. Ces réactions sont considérées séparément par chacun des eps_i
             collision_frequencies : np.array containing the collision frequencies for each specie in the order in which they appear in self.species"""
         omega_pe_sq = (state[0] * e**2) / (m_e * eps_0)
         
-        eps_p = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*np.sum(collision_frequencies)))
+        eps_p = 1 - omega_pe_sq / (self.chamber.omega * (self.chamber.omega -  1j*collision_frequency))
         self.var_tracker.add_value_to_variable("eps_p_real", np.real(eps_p))
         self.var_tracker.add_value_to_variable("eps_p_imag", np.imag(eps_p))
         return eps_p
 
     @override
-    def absorbed_power(self, state, collision_frequencies) -> float:
-        R_ind = self.R_ind(self.eps_p(collision_frequencies, state))
+    def absorbed_power(self, state, collision_frequency) -> float:
+        R_ind = self.R_ind(self.eps_p(collision_frequency, state))
 
         absorbed_power = self.power_RF * R_ind / (R_ind + self.chamber.R_coil)
         self.var_tracker.add_value_to_variable("power_transfer_efficiency", R_ind / (R_ind + self.chamber.R_coil))
