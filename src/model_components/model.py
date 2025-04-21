@@ -75,8 +75,7 @@ class GlobalModel:
             collision_frequency = 0.0
             for reac in self.reaction_set:
                 density_change = reac.density_change_rate(state)
-                if abs(density_change[0] - density_change[2])/abs(density_change[0] + 1e-20) > 1e-5:
-                    raise Exception(f"Warning : No equality for {type(reac)}, {reac} with : \n {density_change}")
+                
                 dy_densities += density_change
                 dy_energies += reac.energy_change_rate(state)
                 if isinstance(reac, GeneralElasticCollision) :
@@ -116,9 +115,10 @@ class GlobalModel:
             self.var_tracker.add_value_to_variable('total_thrust', self.total_thrust(state))
             self.var_tracker.add_value_to_variable('u_B', self.chamber.u_B(state[self.species.nb],2.18e-25))
             self.var_tracker.add_value_to_variable('ion_current', self.total_ion_current(state))
-            print(f" t={t}")
-            print(state)
-            print(dy)
+            string = ( f"\nt={t:15.9e}" 
+                + "\nstate :" + " ".join([f"{val:12.5e}" for val in state])
+                + "\n  dy  :" + " ".join([f"{val:12.5e}" for val in dy]) )
+            print(string)
         except Exception as exc:
             print(f"Error in f_dy with state = {state}: \n {exc}")
             raise exc

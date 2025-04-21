@@ -5,13 +5,13 @@ from src.model_components.model import GlobalModel
 from src.config import config_dict
 from src.model_components.chamber_caracteristics import Chamber
 #from src.reaction_sets.Reaction_set_Xe_test1 import get_species_and_reactions
-from src.reaction_sets.Reaction_set_Xe_test1 import get_species_and_reactions
+from src.reaction_sets.reaction_set_N_et_O import get_species_and_reactions
 
 
 
 chamber = Chamber(config_dict)
 species, initial_state, reactions_list, electron_heating = get_species_and_reactions(chamber)
-model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="all_reac_Prf_cst")
+model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="NO_cstPabs")
 
 #print(chamber.V_chamber)
 # print(chamber.S_eff_total(chamber.n_g_0))
@@ -25,7 +25,7 @@ model = GlobalModel(species, reactions_list, chamber, electron_heating, simulati
 # Solve the model
 try:
     print("Solving model...")
-    sol = model.solve(0, 0.1, initial_state)  # TODO Needs some testing
+    sol = model.solve(0, 1, initial_state)  # TODO Needs some testing
     print("Model resolved !")
 except Exception as exception:
     print("Entering exception...")
@@ -41,8 +41,9 @@ time_points = sol.t
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(8, 6))
 
 # Plot species concentrations on the first subplot
+#ax1.yscale('log')
 for i, specie in enumerate(species.species):
-    ax1.plot(time_points, final_states[i], label=specie.name)
+    ax1.semilogy(time_points, final_states[i], label=specie.name)
 ax1.set_ylabel('Density of species (m^-3)')
 ax1.legend(loc='best')
 ax1.grid()
