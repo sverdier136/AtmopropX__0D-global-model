@@ -33,7 +33,7 @@ class Dissociation(Reaction):
         chamber : Chamber
             Instance of the Chamber class containing chamber characteristics.
         """
-        super().__init__(species, [species.names[0], diatomic_reactive], [species.names[0] + monoatomic_product], chamber)
+        super().__init__(species, [species.names[0], diatomic_reactive], [species.names[0], monoatomic_product], chamber)
         self.rate_constant = rate_constant
         self.energy_threshold = energy_threshold
         self.monoatomic_energy_excess = monoatomic_energy_excess
