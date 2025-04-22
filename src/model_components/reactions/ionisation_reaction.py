@@ -18,6 +18,8 @@ class Ionisation(Reaction):
 
     """
 
+    instance_counter = {}
+
     def __init__(self, 
                  species: Species, 
                  molecule_before_ionization_name: str, 
@@ -40,6 +42,14 @@ class Ionisation(Reaction):
 
         self.threshold_energy = threshold_energy
         self.rate_constant = rate_constant   # func
+
+        name = f"{molecule_before_ionization_name}"
+        if name in self.instance_counter:
+            self.name = f"ion_{name}_{self.instance_counter[name]}"
+            self.instance_counter[name] += 1
+        else:
+            self.name = f"ion_{name}_0"
+            self.instance_counter[name] = 1
         
     @override
     def density_change_rate(self, state: NDArray[float]): # type: ignore
@@ -52,9 +62,8 @@ class Ionisation(Reaction):
         rate[self.reactives_indices[1]] = - reaction_speed
         # change for molecule after ionization
         rate[self.products_indices[1]] = reaction_speed
-        self.var_tracker.add_value_to_variable('Kiz', self.rate_constant(state))
-        self.var_tracker.add_value_to_variable('reaction_speed', reaction_speed)
-        self.var_tracker.add_value_to_variable_list("density_change_ionisation", rate)
+
+        self.var_tracker.add_value_to_variable("E_"+self.name, reaction_speed)
         
         return rate
 
@@ -65,8 +74,9 @@ class Ionisation(Reaction):
 
         K = self.rate_constant(state)
         rate[0] -= e*self.threshold_energy * K * np.prod(state[self.reactives_indices])
-        self.var_tracker.add_value_to_variable_list('energy_change_ionisation', rate)
-        
+
+        self.var_tracker.add_value_to_variable("E_"+self.name, e*self.threshold_energy * K * np.prod(state[self.reactives_indices]))
+
         return rate
 
 

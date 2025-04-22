@@ -18,6 +18,8 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
     In reactives, electron must be in first position and colliding_specie next.
     """
 
+    instance_counter = {}
+
     def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float, chamber: Chamber):
         """
         Elastic collision between molecule and electron
@@ -29,6 +31,14 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
         """
         super().__init__(species, [species.names[0], colliding_specie], [species.names[0], colliding_specie], rate_constant, energy_treshold, chamber)
         self.rate_constant = rate_constant
+
+        name = f"{colliding_specie}"
+        if name in self.instance_counter:
+            self.name = f"ela_col_{name}_{self.instance_counter[name]}"
+            self.instance_counter[name] += 1
+        else:
+            self.name = f"ela_col_{name}_0"
+            self.instance_counter[name] = 1
 
     @override
     def density_change_rate(self, state):
@@ -48,7 +58,7 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
         
         rate[0] = -energy_change
         rate[self.reactives[1].nb_atoms] = energy_change #mono / diatomic particles gain energy, electrons lose energy
-        self.var_tracker.add_value_to_variable("energy_change_elastic_collision", energy_change)
+        self.var_tracker.add_value_to_variable("E_"+self.name, energy_change)
 
         return rate
 

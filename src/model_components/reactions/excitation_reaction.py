@@ -18,6 +18,8 @@ class Excitation(Reaction):
 
     """
 
+    instance_counter = {}
+
     def __init__(self, 
                  species: Species, 
                  molecule_name: str, 
@@ -41,6 +43,14 @@ class Excitation(Reaction):
 
         self.threshold_energy = threshold_energy
         self.rate_constant = rate_constant   # func
+
+        name = f"{molecule_name}"
+        if name in self.instance_counter:
+            self.name = f"exc_{name}_{self.instance_counter[name]}"
+            self.instance_counter[name] += 1
+        else:
+            self.name = f"exc_{name}_0"
+            self.instance_counter[name] = 1
         
     @override
     def density_change_rate(self, state: NDArray[float]): # type: ignore
@@ -58,8 +68,7 @@ class Excitation(Reaction):
         K = self.rate_constant(state)
         rate[0] -= e*self.threshold_energy * K * np.prod(state[self.reactives_indices])
 
-        self.var_tracker.add_value_to_variable('Kexc', self.rate_constant(state))
-        self.var_tracker.add_value_to_variable('energy_change_excitation', rate[0])
+        self.var_tracker.add_value_to_variable("E_e-_"+self.name, e*self.threshold_energy * K * np.prod(state[self.reactives_indices]))
         return rate
 
 

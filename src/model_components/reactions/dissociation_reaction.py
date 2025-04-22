@@ -13,7 +13,7 @@ class Dissociation(Reaction):
     Works with 3 temperatures : Te, Tmono, Tdiat
     In reactives, electron must be in first position and colliding_specie next.
     """
-
+    instance_counter = {}
     def __init__(self, species: Species, diatomic_reactive: str, monoatomic_product: str, rate_constant: Callable, energy_threshold: float, monoatomic_energy_excess: float, chamber: Chamber):
         """ Dissociation class
         Parameters:
@@ -37,6 +37,14 @@ class Dissociation(Reaction):
         self.rate_constant = rate_constant
         self.energy_threshold = energy_threshold
         self.monoatomic_energy_excess = monoatomic_energy_excess
+        
+        name = f"{diatomic_reactive}"
+        if name in self.instance_counter:
+            self.name = f"diss_{name}_{self.instance_counter[name]}"
+            self.instance_counter[name] += 1
+        else:
+            self.name = f"diss_{name}_0"
+            self.instance_counter[name] = 1
 
     @override
     def density_change_rate(self, state):
@@ -47,6 +55,8 @@ class Dissociation(Reaction):
         reaction_speed = K * np.prod(state[self.reactives_indices])
         rate[sp_diato.index] -=  reaction_speed
         rate[sp_monoato.index] += 2 * reaction_speed
+
+        self.var_tracker.add_value_to_variable("D_"+self.name, reaction_speed)
 
         return rate
     
@@ -60,5 +70,8 @@ class Dissociation(Reaction):
         rate[0] = - reac_speed * self.energy_threshold
         
         rate[1] = 2 * self.monoatomic_energy_excess * reac_speed 
+
+        self.var_tracker.add_value_to_variable("E_e-_"+self.name, reac_speed * self.energy_threshold)
+        self.var_tracker.add_value_to_variable("E_mono_"+self.name, 2 * self.monoatomic_energy_excess * reac_speed )
         
         return rate
