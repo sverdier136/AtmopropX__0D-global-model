@@ -42,6 +42,6 @@ class GasInjection(Reaction):
         rate = np.zeros(3)
 
         for sp in self.products:
-            rate[sp.nb_atoms] += 3/2 * self.injection_rates[sp.index] * e * self.T_injection / self.chamber.V_chamber
+            rate[sp.nb_atoms] += sp.thermal_capacity * self.injection_rates[sp.index] * e * self.T_injection / self.chamber.V_chamber
         self.var_tracker.add_value_to_variable_list("energy_change_gas_injection", rate)
         return rate

@@ -19,7 +19,7 @@ def get_species_and_reactions(chamber):
                     
     species = Species([Specie("e", m_e, -e, 0, 3/2), Specie("Xe", 2.18e-25, 0, 1, 3/2), Specie("Xe+", 2.18e-25, e, 1, 3/2)])
 
-    init_state = [1e14, 1e22, 1e14, 2.7, 0.03, 0.001]
+    init_state = [1.29e18, 2.24e19, 1.29e18, 3.14, 0.043, 0.001]
 
     def Kexc(state):
         T=state[species.nb]
@@ -36,12 +36,12 @@ def get_species_and_reactions(chamber):
     #lambda T: Kexc(T)
 
     ### Elastic Collision : OK
-    ela_elec_Xe = ElasticCollisionWithElectron(species, "Xe", lambda T : 1e-13, 0, chamber) 
+    ela_elec_Xe = ElasticCollisionWithElectron(species, "Xe", get_K_func(species, "Xe", "Elastic_Xe"), 0, chamber) 
     # get_K_func(species, "Xe", "ela_elec_Xe")
     #lambda T : 1e-13
     
     ### Terme source : OK
-    src_Xe = GasInjection(species, [0.0, 1.2e19, 0], 0.03, chamber) 
+    src_Xe = GasInjection(species, [0.0, 1.2e19, 0.0], 0.03, chamber) 
 
     ### Sortie de Xe à travers les grilles
     out_Xe = FluxToWallsAndThroughGrids(species, chamber) 
@@ -73,7 +73,7 @@ def get_species_and_reactions(chamber):
     #reaction_list=[ela_elec_Xe]
 
     #electron_heating = ElectronHeatingConstantAbsorbedPower(species, 0, chamber) 
-    electron_heating = ElectronHeatingConstantRFPower(species, 1, chamber)
+    electron_heating = ElectronHeatingConstantRFPower(species, 1180, chamber)
     #electron_heating = ElectronHeatingConstantCurrent(species, 10, chamber)
 
     # print([sp.name for sp in species.species if sp.charge == 0])

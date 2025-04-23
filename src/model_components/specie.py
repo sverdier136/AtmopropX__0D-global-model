@@ -46,5 +46,11 @@ class Species:
             if sp.name == name:
                 return sp
         raise Exception(f"There is no {name} in this species group")
+    
+    def __str__(self):
+        string = ""
+        for sp in self.species:
+            string += f"{sp.name} : {sp.nb_atoms} atoms, {sp.thermal_capacity}, index = {sp.index} \n"
+        return string
 
 # species_list = Species([Specie("I0", 10.57e-27, 0), Specie("I1", 10.57e-27, 0), Specie("I2", 10.57e-27, 0), Specie("I3", 10.57e-27, 0), Specie("I4", 10.57e-27, 0), Specie("I5", 10.57e-27, 0)])

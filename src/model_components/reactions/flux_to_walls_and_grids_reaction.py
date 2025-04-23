@@ -45,7 +45,7 @@ class FluxToWallsAndThroughGrids(Reaction):
     def density_change_rate(self, state):
         rate = np.zeros(self.species.nb)
         gamma_e = 0
-        for sp in self.species.species[1:] :   # electron are skipped because handled before
+        for sp in self.species.species[1:] :   # electron are skipped because handled afterwards
             if sp.charge != 0:
                 gamma_ion = self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass)
                 rate[sp.index] -=  gamma_ion * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
