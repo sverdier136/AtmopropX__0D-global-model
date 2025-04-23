@@ -2,6 +2,9 @@ import os
 import json
 
 from src.model_components.specie import Species
+
+json.encoder.FLOAT_REPR = lambda x: format(x, '.9e')
+
 class VariableTracker:
 
     def __init__(self, log_folder_path, log_file_name):

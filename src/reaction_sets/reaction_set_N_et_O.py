@@ -25,16 +25,16 @@ def get_species_and_reactions(chamber):
     species = Species([Specie("e", m_e, -e, 0, 3/2), Specie("N2", 4.65e-26, 0, 2, 5/2), Specie("N", 2.33e-26, 0, 1, 3/2), Specie("N2+", 4.65e-26, e, 2, 5/2), Specie("N+", 2.33e-26, e, 1, 3/2), Specie("O2+", 5.31e-26, e, 2, 5/2), Specie("O2", 5.31e-26, 0, 2, 5/2), Specie("O", 2.67e-26, 0, 1, 3/2), Specie("O+", 2.67e-26, e, 1, 3/2)])
 
     initial_state_dict = {
-        "e": 1e13,
-        "N2": 5e14,
-        "N": 8e13,
-        "N2+": 1e9,
-        "N+": 1e9,
-        "O2+": 1e10,
-        "O2": 2e13,
-        "O": 1e15,
-        "O+": 1e10,
-        "T_e": 4.0,
+        "e": 4e18,
+        "N2": 5e23,
+        "N": 8e23,
+        "N2+": 1e18,
+        "N+": 1e18,
+        "O2+": 1e18,
+        "O2": 2e23,
+        "O": 1e23,
+        "O+": 1e18,
+        "T_e": 1.0,
         "T_mono": 0.03,
         "T_diato": 0.03
     }
@@ -103,7 +103,7 @@ def get_species_and_reactions(chamber):
 
 #  ▄▀  ▄▀▄ ▄▀▀   █ █▄ █   █ ██▀ ▄▀▀ ▀█▀ █ ▄▀▄ █▄ █
 #  ▀▄█ █▀█ ▄██   █ █ ▀█ ▀▄█ █▄▄ ▀▄▄  █  █ ▀▄▀ █ ▀█
-    injection_rates = compression_rate * np.array([1e9, 5e14, 8e13, 1e10, 1e10, 1e10, 2e13, 1e15, 1e10]) #à revoir
+    injection_rates = compression_rate * np.array([0.0, 5e20, 8e19, 0.0, 0.0, 0.0, 2e19, 1e21, 0.0]) #à revoir
     T_injection = 0.03 #à revoir
     gas_injection = GasInjection(species, injection_rates, T_injection, chamber)
 
@@ -140,7 +140,7 @@ def get_species_and_reactions(chamber):
 
 #  ██▀ █   ██▀ ▄▀▀ ▀█▀ █▀▄ ▄▀▄ █▄ █   █▄█ ██▀ ▄▀▄ ▀█▀ █ █▄ █ ▄▀    ██▄ ▀▄▀   ▀█▀ █▄█ ██▀   ▄▀▀ ▄▀▄ █ █    
 #  █▄▄ █▄▄ █▄▄ ▀▄▄  █  █▀▄ ▀▄▀ █ ▀█   █ █ █▄▄ █▀█  █  █ █ ▀█ ▀▄█   █▄█  █     █  █ █ █▄▄   ▀▄▄ ▀▄▀ █ █▄▄  
-    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 1000, 0.6, chamber)
+    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 50000000000, 0.6, chamber)
 
     return species, initial_state, reaction_list, electron_heating
 

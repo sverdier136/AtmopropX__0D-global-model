@@ -173,7 +173,7 @@ class GlobalModel:
     def solve(self, t0, tf, initial_state):
         #y0 = np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
         y0 = np.array(initial_state)  #np.array([self.chamber.n_e_0, self.chamber.n_g_0, 0, self.chamber.T_e_0, self.chamber.T_g_0, 0])
-        sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA', rtol=1e-4, atol=1e-15, first_step=5e-10, min_step=1e-15)    # , max_step=1e-7
+        sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA', rtol=1e-4, atol=1e-15, first_step=5e-12, min_step=1e-15)    # , max_step=1e-7
         #log_file_path=self.simulation_name
         self.var_tracker.save_tracked_variables()
         print("Variables saved")

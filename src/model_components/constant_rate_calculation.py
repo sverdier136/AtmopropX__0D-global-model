@@ -16,8 +16,8 @@ def rate_constant(T_e, E, cs, m):
     """Calculates a reaction rate constant """
     #T = T_e * k / e
     if 10 * e * T_e > np.max(E):
-        E = np.append(E, 10 * e * T_e)
-        cs = np.append(cs, cs[-1])
+        E = np.append(E, np.logspace(np.max(E), 10 * e * T_e, 100))
+        cs = np.append(cs, [cs[-1]]*100)
     v = np.sqrt(2 * E * e / m)  # electrons speed
     a = (m / (2 * np.pi * e * T_e))**(3/2) * 4 * np.pi
     f = cs * v**3 * np.exp(- m * v**2 / (2 * e * T_e)) 
