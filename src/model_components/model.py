@@ -74,9 +74,7 @@ class GlobalModel:
 
             collision_frequency = 0.0
             for reac in self.reaction_set:
-                density_change = reac.density_change_rate(state)
-                
-                dy_densities += density_change
+                dy_densities += reac.density_change_rate(state)
                 dy_energies += reac.energy_change_rate(state)
                 if isinstance(reac, GeneralElasticCollision) :
                     sp, freq = reac.colliding_specie_and_collision_frequency(state)
@@ -110,11 +108,11 @@ class GlobalModel:
             self.var_tracker.add_value_to_variable_list("energy_", energies, "_atom")
             self.var_tracker.add_value_to_variable('h_L', self.chamber.h_L(self.n_g_tot(state)))
             self.var_tracker.add_value_to_variable('h_R', self.chamber.h_R(self.n_g_tot(state)))
-            self.var_tracker.add_value_to_variable('total_ion_thrust', self.total_ion_thrust(state))
-            self.var_tracker.add_value_to_variable('total_neutral_thrust', self.total_neutral_thrust(state))
-            self.var_tracker.add_value_to_variable('total_thrust', self.total_thrust(state))
-            self.var_tracker.add_value_to_variable('u_B', self.chamber.u_B(state[self.species.nb],2.18e-25))
-            self.var_tracker.add_value_to_variable('ion_current', self.total_ion_current(state))
+            # self.var_tracker.add_value_to_variable('total_ion_thrust', self.total_ion_thrust(state))
+            # self.var_tracker.add_value_to_variable('total_neutral_thrust', self.total_neutral_thrust(state))
+            # self.var_tracker.add_value_to_variable('total_thrust', self.total_thrust(state))
+            # self.var_tracker.add_value_to_variable('u_B', self.chamber.u_B(state[self.species.nb],2.18e-25))
+            # self.var_tracker.add_value_to_variable('ion_current', self.total_ion_current(state))
             string = ( f"\nt={t:15.9e}" 
                 + "\nstate :" + " ".join([f"{val:12.5e}" for val in state])
                 + "\n  dy  :" + " ".join([f"{val:12.5e}" for val in dy]) )
@@ -178,6 +176,7 @@ class GlobalModel:
         sol = solve_ivp(self.f_dy, (t0, tf), y0, method='LSODA', rtol=1e-4, atol=1e-15, first_step=5e-10, min_step=1e-15)    # , max_step=1e-7
         #log_file_path=self.simulation_name
         self.var_tracker.save_tracked_variables()
+        print("Variables saved")
         return sol
 
 
