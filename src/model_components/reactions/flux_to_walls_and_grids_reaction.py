@@ -55,7 +55,6 @@ class FluxToWallsAndThroughGrids(Reaction):
                 #(1-self.chamber.h_L(self.n_g_tot(state))) *
             else:
                 rate[sp.index] -= self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms], sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
-                self.var_tracker.add_value_to_variable("xenon_leaving", self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms], sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber)
         #gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
         rate[0] = - gamma_e * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
         self.var_tracker.add_value_to_variable_list("density_change_flux_to_walls_and_through_grids", rate)

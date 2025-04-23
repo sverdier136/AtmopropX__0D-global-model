@@ -50,6 +50,8 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
         rate = np.zeros(3)
 
         K = self.rate_constant(state)
+        self.var_tracker.add_value_to_variable("K_"+self.name, K)
+
         reac_speed = K * np.prod(state[self.reactives_indices])
         mass_ratio = m_e / self.reactives[1].mass  # self.reactives[1].mass is mass of colliding_specie
         delta_temp = state[self.species.nb] - state[self.species.nb + self.reactives[1].nb_atoms]  # Te - Tspecie

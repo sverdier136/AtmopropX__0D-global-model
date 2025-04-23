@@ -63,7 +63,7 @@ class Ionisation(Reaction):
         # change for molecule after ionization
         rate[self.products_indices[1]] = reaction_speed
 
-        self.var_tracker.add_value_to_variable("E_"+self.name, reaction_speed)
+        self.var_tracker.add_value_to_variable("D_"+self.name, reaction_speed)
         
         return rate
 
@@ -75,6 +75,7 @@ class Ionisation(Reaction):
         K = self.rate_constant(state)
         rate[0] -= e*self.threshold_energy * K * np.prod(state[self.reactives_indices])
 
+        self.var_tracker.add_value_to_variable("K_"+self.name, e*self.threshold_energy * K * np.prod(state[self.reactives_indices]))
         self.var_tracker.add_value_to_variable("E_"+self.name, e*self.threshold_energy * K * np.prod(state[self.reactives_indices]))
 
         return rate
