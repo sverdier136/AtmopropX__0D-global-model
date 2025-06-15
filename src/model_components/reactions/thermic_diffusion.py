@@ -19,7 +19,6 @@ class ThermicDiffusion(Reaction):
 
     def __init__(self, 
                  species: Species, 
-                 molecule_name: str, 
                  kappa : float,
                  temp_paroi : float,
                  chamber: Chamber
@@ -37,7 +36,7 @@ class ThermicDiffusion(Reaction):
             spectators : list with spectators names (used to print reaction)
         """
         # species.names[0] nom des électrons
-        super().__init__(species, [species.names[0], molecule_name], [species.names[0], molecule_name], chamber)
+        super().__init__(species, species.names, species.names, chamber)
         self.kappa = kappa
         self.temp_paroi=temp_paroi
         

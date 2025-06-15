@@ -7,41 +7,18 @@ import numpy as np
 config_dict = {
 
         # Geometry
-        'R': 6e-2,
-        #'R' : 1,
-        #'L' : 0.5,
-        'L': 10e-2,
-        's': 1e-3,
+        'R': 1e-2,
+        'L': 18e-2,
         
         # Neutral flow
-        'Q_g': 1.2e19,
-        'beta_g': 0.3,
+        'pressure': 30.66, #in Pa
         'kappa': 0.0057,
 
-        # Ions
-        # TODO : are these still valid for N, do we need multiple values ?
-        'beta_i': 0.7,
-        'V_grid': 1000,  # potential difference
-
         # Electrical
-        'omega': 13.56e6 * 2 * pi,
-        'N': 5,
-        'R_coil': 2,
-        'I_coil': 26,
-
-        # Initial values
-        'T_e_0': 2.3, # eV
-        'n_e_0': 9e17,
-        'n_Xe+_0': 9e17,
-        'n_g_0': 2e20,
-        'T_g_0':0.4
-
-        # almost at equi
-        # 'T_e_0': 2.39, # eV
-        # 'n_e_0': 7.8e15,
-        # 'n_Xe+_0': 1.8e16,
-        # 'n_g_0': 5.8e19,
-        # 'T_g_0':0.0305 
+        'omega': 40.66e6 * 2 * pi,
+        'V_grid': 1000,  # potential difference
+        'N': 1.5,
+        'R_coil': 1.21e-4
 
 }
 

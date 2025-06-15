@@ -15,37 +15,20 @@ class Chamber(object):
         self.L      = config_dict["L"]
         self.V_chamber = pi * self.R**2 * self.L
         #self.V_chamber=0.5
-        self.s      = config_dict["s"]
         self.S_grid = pi * self.R**2
         self.S_walls = pi * self.R * self.L
         self.S_total = 2 * self.S_grid + self.S_walls
         
 
         # Neutral flow
-        self.Q_g    = config_dict["Q_g"]
-        self.beta_g = config_dict["beta_g"]
         self.kappa  = config_dict["kappa"]
-
-        # Ions
-        self.beta_i = config_dict["beta_i"]
+        self.target_pressure = config_dict["pressure"]
 
         # Electrical
         self.omega  = config_dict["omega"]
         self.N      = config_dict["N"]
         self.R_coil = config_dict["R_coil"]
-        self.I_coil = config_dict["I_coil"]
-        self.V_grid = config_dict["V_grid"]
-
-
-        # Initial values
-        self.T_e_0  = config_dict["T_e_0"]
-        self.n_e_0  = config_dict["n_e_0"]
-        self.T_g_0  = config_dict["T_g_0"]
-        self.n_Xe_plus = config_dict["n_Xe+_0"]
-        self.n_g_0 = config_dict["n_g_0"]
-
-
-    
+        self.V_grid = config_dict["V_grid"]    
     
     
     def u_B(self,T_e, m_ion):

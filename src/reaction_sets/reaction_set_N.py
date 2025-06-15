@@ -15,7 +15,7 @@ from src.model_components.reactions.inelastic_collision import InelasticCollisio
 from src.model_components.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
 from src.model_components.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
 from src.model_components.reactions.gas_injection_reaction import GasInjection
-from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent
+from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent, ElectronHeatingConstantRFPower
 
 from src.model_components.specie import Species, Specie
 from src.model_components.constant_rate_calculation import get_K_func
@@ -25,11 +25,11 @@ def get_species_and_reactions(chamber):
     species = Species([Specie("e", m_e, -e, 0, 3/2), Specie("N2", 4.65e-26, 0, 2, 5/2), Specie("N", 2.33e-26, 0, 1, 3/2), Specie("N2+", 4.65e-26, e, 2, 5/2), Specie("N+", 2.33e-26, e, 1, 3/2)])
 
     initial_state_dict = {
-        "e": 2e18,
-        "N2": 3e19,
-        "N": 3e19,
-        "N2+": 1e18,
-        "N+": 1e18,
+        "e": 2e20,
+        "N2": 3e24,
+        "N": 3e24,
+        "N2+": 1e20,
+        "N+": 1e20,
         # "O2+": 1e10,
         # "O2": 2e13,
         # "O": 1e15,
@@ -75,11 +75,11 @@ def get_species_and_reactions(chamber):
 
 #  ██▀ █   ▄▀▄ ▄▀▀ ▀█▀ █ ▄▀▀   ▄▀▀ ▄▀▄ █   █   █ ▄▀▀ █ ▄▀▄ █▄ █ ▄▀▀
 #  █▄▄ █▄▄ █▀█ ▄██  █  █ ▀▄▄   ▀▄▄ ▀▄▀ █▄▄ █▄▄ █ ▄██ █ ▀▄▀ █ ▀█ ▄██  # * complete
-    # ela_N = ElasticCollisionWithElectron(species, "N", get_K_func(species, "N", "ela_N"), 0, chamber)
-    # ela_N2 = ElasticCollisionWithElectron(species, "N2", get_K_func(species, "N2", "ela_N2"), 0, chamber)
+    ela_N = ElasticCollisionWithElectron(species, "N", get_K_func(species, "N", "ela_N"), 0, chamber)
+    ela_N2 = ElasticCollisionWithElectron(species, "N2", get_K_func(species, "N2", "ela_N2"), 0, chamber)
 
-    ela_N = ElasticCollisionWithElectron(species, "N", lambda T : 1e-13, 0, chamber)
-    ela_N2 = ElasticCollisionWithElectron(species, "N2", lambda T : 1.5e-13, 0, chamber)
+    # ela_N = ElasticCollisionWithElectron(species, "N", lambda T : 1e-13, 0, chamber)
+    # ela_N2 = ElasticCollisionWithElectron(species, "N2", lambda T : 1.5e-13, 0, chamber)
 
 
 #  █▀ █   █ █ ▀▄▀ ██▀ ▄▀▀   ▀█▀ ▄▀▄   ▀█▀ █▄█ ██▀   █   █ ▄▀▄ █   █   ▄▀▀   ▄▀▄ █▄ █ █▀▄   ▀█▀ █▄█ █▀▄ ▄▀▄ █ █ ▄▀  █▄█   ▀█▀ █▄█ ██▀   ▄▀  █▀▄ █ █▀▄ ▄▀▀
@@ -89,7 +89,7 @@ def get_species_and_reactions(chamber):
 
 #  ▄▀  ▄▀▄ ▄▀▀   █ █▄ █   █ ██▀ ▄▀▀ ▀█▀ █ ▄▀▄ █▄ █
 #  ▀▄█ █▀█ ▄██   █ █ ▀█ ▀▄█ █▄▄ ▀▄▄  █  █ ▀▄▀ █ ▀█
-    injection_rates = compression_rate * np.array([0.0, 5e14, 8e13, 0.0, 0.0]) #, 1e10, 2e13, 1e15, 1e10] #à revoir
+    injection_rates = compression_rate * np.array([0.0, 1.345e-19, 0.0, 0.0, 0.0]) #, 1e10, 2e13, 1e15, 1e10] #à revoir
     T_injection = 0.03 #à revoir
     gas_injection = GasInjection(species, injection_rates, T_injection, chamber)
 
@@ -105,10 +105,7 @@ def get_species_and_reactions(chamber):
 
 #  ▀█▀ █▄█ ██▀ █▀▄ █▄ ▄█ █ ▄▀▀   █▀▄ █ █▀ █▀ █ █ ▄▀▀ █ ▄▀▄ █▄ █  
 #   █  █ █ █▄▄ █▀▄ █ ▀ █ █ ▀▄▄   █▄▀ █ █▀ █▀ ▀▄█ ▄██ █ ▀▄▀ █ ▀█  
-    #th_O2 = ThermicDiffusion(species_list, "O2", 0.005, 0.03, chamber) #revoir le kappa, on n'a pas besoin de la colliding specie
-    # th_N2 = ThermicDiffusion(species_list, "N2", 0.005, 0.03, chamber)
-    # th_O = ThermicDiffusion(species_list, "O", 0.005, 0.03, chamber)
-    # th_N = ThermicDiffusion(species_list, "N", 0.005, 0.03, chamber)
+    th_diff = ThermicDiffusion(species, 0.005, 0.03, chamber)
 
     #soit mettre le kappa en instance, soit faire une liste de kappa (mais faut l'associer à la bonne espèce)
     
@@ -118,13 +115,13 @@ def get_species_and_reactions(chamber):
         exc1_N2, exc2_N2, exc3_N2, exc4_N2, exc5_N2, exc6_N2, exc7_N2, exc8_N2, exc9_N2, exc11_N2, exc12_N2, exc13_N2, exc14_N2, 
         exc1_N, exc2_N,
         ela_N, ela_N2, 
-        ion_N, ion_N2,
-        out_flux, gas_injection, inelastic_collisions,
+        ion_N, ion_N2, diss_N2,
+        out_flux, gas_injection, inelastic_collisions, th_diff
     ]
 
 #  ██▀ █   ██▀ ▄▀▀ ▀█▀ █▀▄ ▄▀▄ █▄ █   █▄█ ██▀ ▄▀▄ ▀█▀ █ █▄ █ ▄▀    ██▄ ▀▄▀   ▀█▀ █▄█ ██▀   ▄▀▀ ▄▀▄ █ █    
 #  █▄▄ █▄▄ █▄▄ ▀▄▄  █  █▀▄ ▀▄▀ █ ▀█   █ █ █▄▄ █▀█  █  █ █ ▀█ ▀▄█   █▄█  █     █  █ █ █▄▄   ▀▄▄ ▀▄▀ █ █▄▄  
-    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 1000, 0.6, chamber)
+    electron_heating = ElectronHeatingConstantRFPower(species, 700, chamber)
 
     return species, initial_state, reaction_list, electron_heating
 

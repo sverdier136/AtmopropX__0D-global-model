@@ -67,9 +67,9 @@ class Dissociation(Reaction):
         K = self.rate_constant(state)
         reac_speed = K * np.prod(state[self.reactives_indices])
         
-        rate[0] = - reac_speed * self.energy_threshold
+        rate[0] = - reac_speed * e * self.energy_threshold
         
-        rate[1] = 2 * self.monoatomic_energy_excess * reac_speed 
+        rate[1] = 2 * e * self.monoatomic_energy_excess * reac_speed 
 
         self.var_tracker.add_value_to_variable("E_e-_"+self.name, reac_speed * self.energy_threshold)
         self.var_tracker.add_value_to_variable("E_mono_"+self.name, 2 * self.monoatomic_energy_excess * reac_speed )

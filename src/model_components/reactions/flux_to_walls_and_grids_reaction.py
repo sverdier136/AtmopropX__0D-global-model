@@ -1,7 +1,7 @@
 from typing import override
 import numpy as np
 from numpy.typing import NDArray
-from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
+from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0, N_A  # k is k_B -> Boltzmann constant
 
 from src.model_components.specie import Specie, Species
 from src.model_components.reactions.reaction import Reaction
@@ -28,6 +28,7 @@ class FluxToWallsAndThroughGrids(Reaction):
                 chamber : chamber parameters of the chamber in which the reactions are taking place
         """
         super().__init__(species, [], species.names, chamber)
+        self.tau = 0.1  # characteristic time to reach target pressure in seconds
         #self.rate_constant = rate_constant
         #self.energy_treshold = energy_treshold
 
@@ -50,12 +51,13 @@ class FluxToWallsAndThroughGrids(Reaction):
                 gamma_ion = self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass)
                 rate[sp.index] -=  gamma_ion * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
                 neutralized_sp = self.species.get_specie_by_name(sp.name[:-1]) # remove last caracter from string, i.e. "Xe+" becomes "Xe"
-                rate[neutralized_sp.index] +=  gamma_ion * self.chamber.S_eff_total_ion_neutrelisation(self.n_g_tot(state)) / self.chamber.V_chamber
+                rate[neutralized_sp.index] +=  gamma_ion * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
                 gamma_e += gamma_ion
                 #(1-self.chamber.h_L(self.n_g_tot(state))) *
             else:
-                rate[sp.index] -= self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms], sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
-        #gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
+                pressure = self.n_g_tot(state) * 8.31 * min(state[self.species.nb + sp.nb_atoms], 500) / N_A #in Pa
+                delta_density = (self.chamber.target_pressure - pressure) * N_A / (8.31 * min(state[self.species.nb + sp.nb_atoms], 500)) # max temperature limitated
+                rate[sp.index] += (state[sp.index] / self.n_g_tot(state)) * delta_density / self.tau  # denominator is the caracteristic time to reach target pressure in seconds
         rate[0] = - gamma_e * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
         self.var_tracker.add_value_to_variable_list("density_change_flux_to_walls_and_through_grids", rate)
         return rate
@@ -77,8 +79,9 @@ class FluxToWallsAndThroughGrids(Reaction):
                 #rate[sp.nb_atoms] -= self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass) * self.chamber.S_eff_total_ion_neutrelisation(n_g) / self.chamber.V_chamber
             else:
                 E_neutral=sp.thermal_capacity * e * state[self.species.nb + sp.nb_atoms]
-                rate[sp.nb_atoms] -= E_neutral * self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms] , sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
-        #gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
+                pressure = self.n_g_tot(state) * 8.31 * min(state[self.species.nb + sp.nb_atoms], 500) / N_A #in Pa
+                delta_density = (self.chamber.target_pressure - pressure) * N_A / (8.31 * min(state[self.species.nb + sp.nb_atoms], 500)) 
+                rate[sp.nb_atoms] += E_neutral * (state[sp.index] / self.n_g_tot(state)) * delta_density / self.tau
         rate[0] -= E_kin * gamma_e * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
         self.var_tracker.add_value_to_variable_list("energy_change_flux_to_walls_and_through_grids", rate)
         return rate
