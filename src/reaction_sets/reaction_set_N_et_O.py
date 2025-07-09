@@ -7,18 +7,18 @@ Created on Wed Jan  8 14:41:30 2025
 
 from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e
 import numpy as np
-from src.model_components.reactions.excitation_reaction import Excitation
-from src.model_components.reactions.ionisation_reaction import Ionisation
-from src.model_components.reactions.dissociation_reaction import Dissociation
-from src.model_components.reactions.thermic_diffusion import ThermicDiffusion
-from src.model_components.reactions.inelastic_collision import InelasticCollision
-from src.model_components.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
-from src.model_components.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
-from src.model_components.reactions.gas_injection_reaction import GasInjection
-from src.model_components.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent
+from src.global_model.reactions.excitation_reaction import Excitation
+from src.global_model.reactions.ionisation_reaction import Ionisation
+from src.global_model.reactions.dissociation_reaction import Dissociation
+from src.global_model.reactions.thermic_diffusion import ThermicDiffusion
+from src.global_model.reactions.inelastic_collision import InelasticCollision
+from src.global_model.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
+from src.global_model.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
+from src.global_model.reactions.gas_injection_reaction import GasInjection
+from src.global_model.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent
 
-from src.model_components.specie import Species, Specie
-from src.model_components.constant_rate_calculation import get_K_func
+from src.global_model.specie import Species, Specie
+from src.global_model.constant_rate_calculation import get_K_func
 
 def get_species_and_reactions(chamber):
     

@@ -1,11 +1,11 @@
 from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e
-from src.model_components.reactions.excitation_reaction import Excitation
-from src.model_components.reactions.ionisation_reaction import Ionisation
-from src.model_components.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
-from src.model_components.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
-from src.model_components.reactions.gas_injection_reaction import GasInjection
-from src.model_components.specie import Species, Specie
-from src.model_components.constant_rate_calculation import get_K_func
+from src.global_model.reactions.excitation_reaction import Excitation
+from src.global_model.reactions.ionisation_reaction import Ionisation
+from src.global_model.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
+from src.global_model.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
+from src.global_model.reactions.gas_injection_reaction import GasInjection
+from src.global_model.specie import Species, Specie
+from src.global_model.constant_rate_calculation import get_K_func
 
 def get_species_and_reactions(chamber):
   species = Species([Specie("e", m_e, -e, 0, 3/2), Specie("Xe", 2.18e-25, 0, 1, 3/2), Specie("Xe+", 2.18e-25, e1, 3/2)])

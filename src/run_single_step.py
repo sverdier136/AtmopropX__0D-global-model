@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 from pprint import pp
 import numpy as np
 from scipy.constants import k, e, pi
-from src.model_components.model import GlobalModel
+from src.global_model.model import GlobalModel
 from src.config import config_dict
-from src.model_components.chamber_caracteristics import Chamber
+from src.global_model.chamber_caracteristics import Chamber
 #from src.reaction_sets.Reaction_set_Xe_test1 import get_species_and_reactions
 import src.reaction_sets.reaction_set_N_mono as reac_set_N_mono
 import src.reaction_sets.Reaction_set_Xe_test1 as reac_set_Xe
