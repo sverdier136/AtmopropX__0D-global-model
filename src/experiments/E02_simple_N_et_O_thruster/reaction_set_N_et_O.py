@@ -1,45 +1,37 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jan  8 14:41:30 2025
-
-@author: liamg
-"""
-
-from scipy.constants import pi, e, k, epsilon_0 as eps_0, c, m_e
 import numpy as np
-from src.global_model.reactions.excitation_reaction import Excitation
-from src.global_model.reactions.ionisation_reaction import Ionisation
-from src.global_model.reactions.dissociation_reaction import Dissociation
-from src.global_model.reactions.thermic_diffusion import ThermicDiffusion
-from src.global_model.reactions.inelastic_collision import InelasticCollision
-from src.global_model.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
-from src.global_model.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
-from src.global_model.reactions.gas_injection_reaction import GasInjection
-from src.global_model.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent
+from scipy.constants import pi, e, k as k_B, epsilon_0 as eps_0, c, m_e
+# import numpy as np
 
-from src.global_model.specie import Species, Specie
-from src.global_model.constant_rate_calculation import get_K_func
+from global_model_package.reactions import (Excitation, Ionisation, Dissociation, 
+    ThermicDiffusion, InelasticCollision, ElasticCollisionWithElectron, 
+    FluxToWallsAndThroughGrids, GasInjection,
+    ElectronHeatingConstantRFPower
+)
+
+from global_model_package.specie import Species, Specie
+from global_model_package.constant_rate_calculation import get_K_func
 
 def get_species_and_reactions(chamber):
     
     species = Species([Specie("e", m_e, -e, 0, 3/2), Specie("N2", 4.65e-26, 0, 2, 5/2), Specie("N", 2.33e-26, 0, 1, 3/2), Specie("N2+", 4.65e-26, e, 2, 5/2), Specie("N+", 2.33e-26, e, 1, 3/2), Specie("O2+", 5.31e-26, e, 2, 5/2), Specie("O2", 5.31e-26, 0, 2, 5/2), Specie("O", 2.67e-26, 0, 1, 3/2), Specie("O+", 2.67e-26, e, 1, 3/2)])
 
     initial_state_dict = {
-        "e": 4e18,
-        "N2": 5e23,
-        "N": 8e23,
-        "N2+": 1e18,
-        "N+": 1e18,
-        "O2+": 1e18,
-        "O2": 2e23,
-        "O": 1e23,
-        "O+": 1e18,
+        "e": 2.1e12,
+        "N2": 8e14,
+        "N": 8e14,
+        "N2+": 1e12,
+        "N+": 1e11,
+        "O2+": 0.5e12,
+        "O2": 2.5e13,
+        "O": 1e15,
+        "O+": 0.5e12,
         "T_e": 1.0,
         "T_mono": 0.03,
         "T_diato": 0.03
     }
-    compression_rate = 100
+    compression_rate = 4_000
     initial_state = [compression_rate * initial_state_dict[specie.name] for specie in species.species] + [initial_state_dict["T_e"], initial_state_dict["T_mono"], initial_state_dict["T_diato"]]
+    injection_rates = np.array([0.0, 3.2e18, 3.2e16, 0.0, 0.0, 0.0, 9.7e16, 4.3e18, 0.0])
     # initial_state = [3.07635e+09,  1.14872e+15,  5.71817e+13,  1.62203e+03,  1.14818e+03,  1.73333e+03,  4.91217e+13,  7.59081e+14,  1.22910e+03,  1.59358e+10,  1.08048e-01,  3.00124e-02]
     # initial_state = [1e15, 5e14, 8e13, 1e10, 1e10, 1e10, 2e13, 1e15, 1e10, 4.0, 0.03, 0.03] # [e, N2, N, N2+, N+, O2+, O2, O, O+, T_e, T_monoatomique, T_diatomique]
     #peut-être changer initial_state parce qu'il faut qu'il y ait un nb suffisant d'électrons
@@ -103,7 +95,6 @@ def get_species_and_reactions(chamber):
 
 #  ▄▀  ▄▀▄ ▄▀▀   █ █▄ █   █ ██▀ ▄▀▀ ▀█▀ █ ▄▀▄ █▄ █
 #  ▀▄█ █▀█ ▄██   █ █ ▀█ ▀▄█ █▄▄ ▀▄▄  █  █ ▀▄▀ █ ▀█
-    injection_rates = compression_rate * np.array([0.0, 5e20, 8e19, 0.0, 0.0, 0.0, 2e19, 1e21, 0.0]) #à revoir
     T_injection = 0.03 #à revoir
     gas_injection = GasInjection(species, injection_rates, T_injection, chamber)
 
@@ -121,10 +112,9 @@ def get_species_and_reactions(chamber):
 
 #  ▀█▀ █▄█ ██▀ █▀▄ █▄ ▄█ █ ▄▀▀   █▀▄ █ █▀ █▀ █ █ ▄▀▀ █ ▄▀▄ █▄ █  
 #   █  █ █ █▄▄ █▀▄ █ ▀ █ █ ▀▄▄   █▄▀ █ █▀ █▀ ▀▄█ ▄██ █ ▀▄▀ █ ▀█  
-    #th_O2 = ThermicDiffusion(species_list, "O2", 0.005, 0.03, chamber) #revoir le kappa, on n'a pas besoin de la colliding specie
-    # th_N2 = ThermicDiffusion(species_list, "N2", 0.005, 0.03, chamber)
-    # th_O = ThermicDiffusion(species_list, "O", 0.005, 0.03, chamber)
-    # th_N = ThermicDiffusion(species_list, "N", 0.005, 0.03, chamber)
+    kappa = lambda T_i : 4.4e-5 * (e / k_B * T_i)**0.8  # noqa: E731
+    #kappa = lambda T_i : 0.0
+    th_diff = ThermicDiffusion(species, kappa, 0.03, chamber)
 
     #soit mettre le kappa en instance, soit faire une liste de kappa (mais faut l'associer à la bonne espèce)
     
@@ -135,12 +125,13 @@ def get_species_and_reactions(chamber):
         exc1_O, exc2_O, exc3_O, exc4_O, exc5_O, exc6_O, exc7_O, exc8_O, exc9_O,
         ela_N, ela_N2, ela_O, ela_O2, 
         ion_N, ion_O2, ion_N2,
-        out_flux, gas_injection, inelastic_collisions,
+        diss1_O2, diss2_O2, diss_N2,
+        out_flux, gas_injection, inelastic_collisions, th_diff
     ]
 
 #  ██▀ █   ██▀ ▄▀▀ ▀█▀ █▀▄ ▄▀▄ █▄ █   █▄█ ██▀ ▄▀▄ ▀█▀ █ █▄ █ ▄▀    ██▄ ▀▄▀   ▀█▀ █▄█ ██▀   ▄▀▀ ▄▀▄ █ █    
 #  █▄▄ █▄▄ █▄▄ ▀▄▄  █  █▀▄ ▀▄▀ █ ▀█   █ █ █▄▄ █▀█  █  █ █ ▀█ ▀▄█   █▄█  █     █  █ █ █▄▄   ▀▄▄ ▀▄▀ █ █▄▄  
-    electron_heating = ElectronHeatingConstantAbsorbedPower(species, 50000000000, 0.6, chamber)
+    electron_heating = ElectronHeatingConstantRFPower(species, 500, chamber)
 
     return species, initial_state, reaction_list, electron_heating
 

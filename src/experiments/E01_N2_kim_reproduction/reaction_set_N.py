@@ -1,22 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jan  8 14:41:30 2025
-
-@author: liamg
-"""
-
 from scipy.constants import pi, e, k as k_B, epsilon_0 as eps_0, c, m_e
 import numpy as np
 
-from global_model_package.reactions.excitation_reaction import Excitation
-from global_model_package.reactions.ionisation_reaction import Ionisation
-from global_model_package.reactions.dissociation_reaction import Dissociation
-from global_model_package.reactions.thermic_diffusion import ThermicDiffusion
-from global_model_package.reactions.inelastic_collision import InelasticCollision
-from global_model_package.reactions.elastic_collision_with_electrons_reaction import ElasticCollisionWithElectron
-from global_model_package.reactions.flux_to_walls_and_grids_reaction import FluxToWallsAndThroughGrids
-from global_model_package.reactions.gas_injection_reaction import GasInjection
-from global_model_package.reactions.electron_heating_by_coil_reaction import ElectronHeatingConstantAbsorbedPower, ElectronHeatingConstantCurrent, ElectronHeatingConstantRFPower
+from global_model_package.reactions import (Excitation, Ionisation, Dissociation, 
+    ThermicDiffusion, InelasticCollision, ElasticCollisionWithElectron, 
+    PressureBalanceFluxToWalls, GasInjection,
+    ElectronHeatingConstantRFPower
+)
 
 from global_model_package.specie import Species, Specie
 from global_model_package.constant_rate_calculation import get_K_func
@@ -85,7 +74,7 @@ def get_species_and_reactions(chamber):
 
 #  █▀ █   █ █ ▀▄▀ ██▀ ▄▀▀   ▀█▀ ▄▀▄   ▀█▀ █▄█ ██▀   █   █ ▄▀▄ █   █   ▄▀▀   ▄▀▄ █▄ █ █▀▄   ▀█▀ █▄█ █▀▄ ▄▀▄ █ █ ▄▀  █▄█   ▀█▀ █▄█ ██▀   ▄▀  █▀▄ █ █▀▄ ▄▀▀
 #  █▀ █▄▄ ▀▄█ █ █ █▄▄ ▄██    █  ▀▄▀    █  █ █ █▄▄   ▀▄▀▄▀ █▀█ █▄▄ █▄▄ ▄██   █▀█ █ ▀█ █▄▀    █  █ █ █▀▄ ▀▄▀ ▀▄█ ▀▄█ █ █    █  █ █ █▄▄   ▀▄█ █▀▄ █ █▄▀ ▄██
-    out_flux = FluxToWallsAndThroughGrids(species, chamber)
+    out_flux = PressureBalanceFluxToWalls(species, chamber)
 
 
 #  ▄▀  ▄▀▄ ▄▀▀   █ █▄ █   █ ██▀ ▄▀▀ ▀█▀ █ ▄▀▄ █▄ █

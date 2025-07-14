@@ -1,10 +1,10 @@
 from typing import override
 import numpy as np
 from numpy.typing import NDArray
-from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0, N_A  # k is k_B -> Boltzmann constant
+from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
 
 from global_model_package.specie import Specie, Species
-from .reaction import Reaction
+from global_model_package.reactions.reaction import Reaction
 from global_model_package.chamber_caracteristics import Chamber
 
 
@@ -21,15 +21,11 @@ class FluxToWallsAndThroughGrids(Reaction):
     def __init__(self, species: Species, chamber: Chamber):
         """
         FluxToWallsAndThroughGrids class
-            Inputs : 
-                species : instance of class Species, lists all species present 
-                rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
-                energy_threshold : energy threshold of electron so that reaction occurs
+            Inputs :
+                species : instance of class Species, lists all species present
                 chamber : chamber parameters of the chamber in which the reactions are taking place
         """
         super().__init__(species, [], species.names, chamber)
-        # WARNING : take sufficiently small value, otherwise delta_pressure will stay high even after a long time (since escape is proportional to delta pressure)
-        self.tau = 0.0001  # characteristic time to reach target pressure in seconds
         #self.rate_constant = rate_constant
         #self.energy_treshold = energy_treshold
 
@@ -46,63 +42,44 @@ class FluxToWallsAndThroughGrids(Reaction):
     @override
     def density_change_rate(self, state):
         rate = np.zeros(self.species.nb)
-
-        pressure = 0
-        for sp in self.species.species[1:]:  # electrons do not contrinute to temperature
-            pressure += state[sp.index] * 8.31 * min(state[self.species.nb + sp.nb_atoms] * e / k_B, 500_000) / N_A #in Pa
-        delta_pressure = max(pressure - self.chamber.target_pressure, 0)
-        self.var_tracker.add_value_to_variable("delta_pressure", delta_pressure)
-        self.var_tracker.add_value_to_variable("pressure", pressure)
-
-
-        total_electron_density_change_rate = 0
+        gamma_e = 0
         for sp in self.species.species[1:] :   # electron are skipped because handled afterwards
-            # escape through the outlet 
-            delta_density = delta_pressure * N_A / (8.31 * min(state[self.species.nb + sp.nb_atoms] * e / k_B, 500_000) ) # max temperature limitated
-            escape_rate = (state[sp.index] / self.n_g_tot(state)) * delta_density / self.tau
-            self.var_tracker.add_value_to_variable(f"escape_rate_{sp.name}", escape_rate) # denominator is the caracteristic time to reach target pressure in seconds
-            rate[sp.index] -= escape_rate
-
-            if sp.charge != 0: #neutralization of charged particles to the walls
+            if sp.charge != 0:
                 gamma_ion = self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass)
-                neutralization_rate = gamma_ion * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
-                self.var_tracker.add_value_to_variable(f"neutralization_rate_{sp.name}", neutralization_rate)
-
-                rate[sp.index] -= neutralization_rate
+                rate[sp.index] -=  gamma_ion * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber    
                 neutralized_sp = self.species.get_specie_by_name(sp.name[:-1]) # remove last caracter from string, i.e. "Xe+" becomes "Xe"
-                rate[neutralized_sp.index] +=  neutralization_rate
-
-                total_electron_density_change_rate += neutralization_rate + escape_rate
-                
-        # electron density change rate
-        rate[0] -= total_electron_density_change_rate
-        self.var_tracker.add_value_to_variable_list("density_change_flux_to_walls_and_through_grids", rate) # type: ignore
+                rate[neutralized_sp.index] +=  gamma_ion * self.chamber.S_eff_total_ion_neutrelisation(self.n_g_tot(state)) / self.chamber.V_chamber
+                gamma_e += gamma_ion
+                #(1-self.chamber.h_L(self.n_g_tot(state))) *
+            else:
+                rate[sp.index] -= self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms], sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
+        #gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
+        rate[0] = - gamma_e * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
+        self.var_tracker.add_value_to_variable_list("density_change_flux_to_walls_and_through_grids", rate)
         return rate
 
-    
+
     @override
     def energy_change_rate(self, state):
 
         rate = np.zeros(3)
 
         E_kin = 7*e*state[self.species.nb]
-        pressure = 0
-        for sp in self.species.species[1:]:  # electrons do not contrinute to temperature
-            pressure += state[sp.index] * 8.31 * min(state[self.species.nb + sp.nb_atoms] * e / k_B, 500_000) / N_A #in Pa
-        delta_pressure = max(pressure - self.chamber.target_pressure, 0)
-    
-        #* energy loss for ions neglected for now because missing energy of ion
+
+
+        # * energy loss for ions neglected for now because missing energy of ion
         gamma_e = 0
         for sp in self.species.species[1:] :   # electron are skipped because handled before
             if sp.charge != 0:
                 gamma_e += self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass)
                 #rate[sp.nb_atoms] -= self.chamber.gamma_ion(state[sp.index], state[self.species.nb] , sp.mass) * self.chamber.S_eff_total_ion_neutrelisation(n_g) / self.chamber.V_chamber
-            E_neutral=sp.thermal_capacity * e * state[self.species.nb + sp.nb_atoms]
-            delta_density = delta_pressure * N_A / (8.31 * min(state[self.species.nb + sp.nb_atoms] * e / k_B, 500_000)) 
-            rate[sp.nb_atoms] -= E_neutral * (state[sp.index] / self.n_g_tot(state)) * delta_density / self.tau
+            else:
+                E_neutral=sp.thermal_capacity * e * state[self.species.nb + sp.nb_atoms]
+                rate[sp.nb_atoms] -= E_neutral * self.chamber.gamma_neutral(state[sp.index], state[self.species.nb + sp.nb_atoms] , sp.mass) * self.chamber.S_eff_neutrals() / self.chamber.V_chamber
+        #gamma_e = state[0]*self.chamber.u_B(state[self.species.nb], 2.18e-25)
         rate[0] -= E_kin * gamma_e * self.chamber.S_eff_total(self.n_g_tot(state)) / self.chamber.V_chamber
-        self.var_tracker.add_value_to_variable_list("energy_change_flux_to_walls_and_through_grids", rate) # type: ignore
+        self.var_tracker.add_value_to_variable_list("energy_change_flux_to_walls_and_through_grids", rate)
         return rate
-    
+
     #problème avec les énergies : pour les ions, jsp mais pour les neutres: on prend l'agitation thermique
     #il faut distinguer mono et diato pour les capacités thermiques

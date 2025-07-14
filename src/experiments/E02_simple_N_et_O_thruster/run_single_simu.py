@@ -1,16 +1,29 @@
+import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.constants import k, e, pi
-from src.global_model.model import GlobalModel
-from src.config import config_dict
-from src.global_model.chamber_caracteristics import Chamber
-from src.reaction_sets.Reaction_set_Xe_test1 import get_species_and_reactions
+from pathlib import Path
+
+# If global_model_package is not installed as package with pip install -e . , adds the global_model_package to the path so that it can be imported as a package
+try :
+    import global_model_package
+    print("'global_model_package' imported as pip package or already in sys.path.")
+except ModuleNotFoundError:
+    global_model_package_path = Path(__file__).resolve().parent.parent.parent.joinpath("global_model_package")
+    sys.path.append(str(global_model_package_path))
+
+from global_model_package.model import GlobalModel
+from global_model_package.chamber_caracteristics import Chamber
+
+from config import config_dict
+from reaction_set_N_et_O import get_species_and_reactions
 
 
 
 chamber = Chamber(config_dict)
 species, initial_state, reactions_list, electron_heating = get_species_and_reactions(chamber)
-model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="Xe_fixed_RF_power")
+log_folder_path = Path(__file__).resolve().parent.parent.parent.parent.joinpath("logs")
+model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="N_O_simple_thruster_constant_kappa", log_folder_path=log_folder_path)
 
 #print(chamber.V_chamber)
 # print(chamber.S_eff_total(chamber.n_g_0))
@@ -23,58 +36,54 @@ model = GlobalModel(species, reactions_list, chamber, electron_heating, simulati
 
 # Solve the model
 try:
-    print("Solving model...") 
-    #power_list = np.linspace(0,1600,400)
-    t0, tf = 0, 1
-    power_list = [5, 50, 100, 200, 400, 600, 800, 1e3, 1.2e3, 1.4e3, 1.6e3]
-    final_state = model.solve_for_RF_power_fixed(power_list, t0, tf, initial_state)  
+    print("Solving model...")
+    sol = model.solve(0, 1, initial_state)  # TODO Needs some testing
     print("Model resolved !")
 except Exception as exception:
     print("Entering exception...")
     model.var_tracker.save_tracked_variables()
     print("Variables saved")
     raise exception
+final_states = sol.y
 
 # Extract time points
-#time_points = sol.t
+time_points = sol.t
 
 # Create figure and primary axis
 fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, figsize=(8, 6))
 
 # Plot species concentrations on the first subplot
+#ax1.yscale('log')
 for i, specie in enumerate(species.species):
-    L=[]
-    for j in range(len(power_list)):
-        L.append(final_state[j][specie.index])
-    print(L)
-    ax1.plot(power_list, L, label=specie.name)
+    ax1.semilogy(time_points, final_states[i], label=specie.name)
 ax1.set_ylabel('Density of species (m^-3)')
 ax1.legend(loc='best')
 ax1.grid()
+#ax1.grid(which='both', axis='y')
 
 # Create a secondary y-axis for Xenon temperature
-# ax3 = ax2.twinx()
+ax3 = ax2.twinx()
 
-# # Plot temperatures: Electron on primary y-axis, Xenon on secondary y-axis
-# ax2.plot(power_list, final_states[species.nb], label='Electron Temp (eV)', color='blue')
-# for i in range(1,3):
-#     ax3.plot(power_list, final_states[species.nb + i], linestyle='--', label= f"Molecules with {i} atoms Temp (eV)")
+# Plot temperatures: Electron on primary y-axis, Xenon on secondary y-axis
+ax2.plot(time_points, final_states[species.nb], label='Electron Temp (eV)', color='blue')
+for i in range(1,3):
+    ax3.plot(time_points, final_states[species.nb + i], linestyle='--', label= f"Molecules with {i} atoms Temp (eV)")
 
-# ax2.set_ylabel('Electron Temperature', color='blue')
-# ax3.set_ylabel('Molecules Temperature', color='red')
-# ax2.tick_params(axis='y', labelcolor='blue')
-# ax3.tick_params(axis='y', labelcolor='red')
+ax2.set_ylabel('Electron Temperature', color='blue')
+ax3.set_ylabel('Molecules Temperature', color='red')
+ax2.tick_params(axis='y', labelcolor='blue')
+ax3.tick_params(axis='y', labelcolor='red')
 
-# # Combine legends
-# lines_2, labels_2 = ax2.get_legend_handles_labels()
-# lines_3, labels_3 = ax3.get_legend_handles_labels()
-# ax2.legend(lines_2 + lines_3, labels_2 + labels_3, loc='best')
+# Combine legends
+lines_2, labels_2 = ax2.get_legend_handles_labels()
+lines_3, labels_3 = ax3.get_legend_handles_labels()
+ax2.legend(lines_2 + lines_3, labels_2 + labels_3, loc='best')
 
 # Set labels and title
-#ax2.set_xlabel('Time (s)')
+ax2.set_xlabel('Time (s)')
 ax1.set_title('Species Concentrations Over Time')
-#ax2.set_title('Temperature Evolution')
-#ax2.grid()
+ax2.set_title('Temperature Evolution')
+ax2.grid()
 
 # Show the plot
 plt.tight_layout()

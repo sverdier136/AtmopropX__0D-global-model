@@ -7,6 +7,7 @@ from scipy.optimize import fsolve
 import json
 import os
 import warnings
+from pathlib import Path
 
 #Local modules
 from .util import load_csv, load_cross_section
@@ -18,7 +19,7 @@ from .variable_tracker import VariableTracker
 
 class GlobalModel:
 
-    def __init__(self, species: Species, reaction_set: list[Reaction], chamber: Chamber, electron_heating: ElectronHeating | None = None, simulation_name: str = "test_simu", log_folder_path: str = "./logs"):
+    def __init__(self, species: Species, reaction_set: list[Reaction], chamber: Chamber, electron_heating: ElectronHeating | None = None, simulation_name: str = "test_simu", log_folder_path: str|Path = "./logs"):
         """Object simulating the evolution of a plasma with 0D model. 
             Inputs :
                 config_dict : dictionary containing all parameters about the experimental setup

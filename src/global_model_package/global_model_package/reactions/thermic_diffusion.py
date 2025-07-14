@@ -12,7 +12,7 @@ from global_model_package.chamber_caracteristics import Chamber
 
 class ThermicDiffusion(Reaction):
     """
-        Represents change in temperature due to thermic exchange with the walls
+        Represents change in temperature due to thermic exchange with the walls.
         Works for 3 temperatures : that of electrons, monoatomic and diatomic particles
 
     """
@@ -20,7 +20,7 @@ class ThermicDiffusion(Reaction):
     def __init__(self, 
                  species: Species, 
                  kappa : Callable[[float], float],
-                 temp_paroi : float,
+                 temp_wall : float,
                  chamber: Chamber
                  ):
         """
@@ -28,17 +28,14 @@ class ThermicDiffusion(Reaction):
         
         Inputs : 
             species : instance of class Species, lists all species present 
-            reactives : list with all reactives names
-            products : list with all products names
-            rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
-            energy_threshold : energy threshold of electron so that reaction occurs
-            stoechio_coeffs : stoechiometric coefficients always positive
-            spectators : list with spectators names (used to print reaction)
+            kappa : Function taking as input the atom temperature and returning the diffusion coefficient
+            temp_wall : temperature of the walls
+            chamber : instance of the Chamber class with the Chamber caracteristics
         """
         # species.names[0] nom des électrons
         super().__init__(species, species.names, species.names, chamber)
         self.kappa = kappa
-        self.temp_paroi=temp_paroi
+        self.temp_wall=temp_wall
         
     @override
     def density_change_rate(self, state: NDArray[np.float64]):
@@ -55,7 +52,7 @@ class ThermicDiffusion(Reaction):
         lambda_0 = self.chamber.L/2.405 + self.chamber.R/np.pi
 
         for sp in self.species.species[1:] :   # electron are skipped because handled before
-            rate[sp.nb_atoms] -= self.kappa(state[self.species.nb]) * e * (state[self.species.nb+sp.nb_atoms] - self.temp_paroi) * self.chamber.S_total/(k_B *lambda_0*self.chamber.V_chamber)
+            rate[sp.nb_atoms] -= self.kappa(state[self.species.nb+sp.nb_atoms]) * e * (state[self.species.nb+sp.nb_atoms] - self.temp_wall) * self.chamber.S_total/(k_B *lambda_0*self.chamber.V_chamber)
 
         self.var_tracker.add_value_to_variable_list('energy_change_thermic_diffusion', rate) # type: ignore
 

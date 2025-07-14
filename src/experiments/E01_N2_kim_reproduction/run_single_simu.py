@@ -7,6 +7,7 @@ from pathlib import Path
 # If global_model_package is not installed as package with pip install -e . , adds the global_model_package to the path so that it can be imported as a package
 try :
     import global_model_package
+    print("'global_model_package' imported as pip package or already in sys.path.")
 except ModuleNotFoundError:
     global_model_package_path = Path(__file__).resolve().parent.parent.parent.joinpath("global_model_package")
     sys.path.append(str(global_model_package_path))
@@ -22,7 +23,6 @@ from reaction_set_N import get_species_and_reactions
 chamber = Chamber(config_dict)
 species, initial_state, reactions_list, electron_heating = get_species_and_reactions(chamber)
 log_folder_path = Path(__file__).resolve().parent.parent.parent.parent.joinpath("logs")
-print(log_folder_path)
 model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="N2_Kim", log_folder_path=log_folder_path)
 
 #print(chamber.V_chamber)
