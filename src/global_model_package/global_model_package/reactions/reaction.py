@@ -1,3 +1,4 @@
+from typing import Self
 import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
@@ -60,21 +61,21 @@ class Reaction:
 
         self.spectators = spectators
         self.chamber = chamber
-        self.var_tracker = None
+        self.var_tracker: VariableTracker = None # type: ignore because changed at start of simulation
         
 
-    def density_change_rate(self, state: NDArray[float]): # type: ignore
+    def density_change_rate(self, state: NDArray[np.float64]): 
         """Returns an np.array with the change rate for each species due to this reaction
         state has format : [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]"""
         raise NotImplementedError("Classes inheriting Reaction should implement density_change_rate")
 
-    def energy_change_rate(self, state: NDArray[float]): # type: ignore
+    def energy_change_rate(self, state: NDArray[np.float64]): 
         """Function meant to return the change in energy due to this specific equation.
             HOWEVER : seems like it is necessary to account for difference in temperature of atoms molecules and electrons...
             Thus 1 function per "Temperatur type" will be needed"""
         raise NotImplementedError("Classes inheriting Reaction should implement energy_change_rate")
-    
-    
+
+
     def __str__(self):
         """Returns string describing the reaction"""
         def format_species(species, species_indices):
@@ -99,17 +100,3 @@ class Reaction:
         self.var_tracker = tracker
 
 
-
-    
-
-if __name__ == "__main__":
-    def K_diss_I2(Ts):
-        print("Temperatures : ",Ts)
-        return 2
-    
-    species_list = Species([Specie("I0", 10.57e-27, 0), Specie("I1", 10.57e-27, 0), Specie("I2", 10.57e-27, 0), Specie("I3", 10.57e-27, 0), Specie("I4", 10.57e-27, 0), Specie("I5", 10.57e-27, 0)])
-
-    reac = Reaction(species_list, ["I2", "I4"], ["I5"], K_diss_I2, 10)
-    state = np.array([1,2,3,4,5,6, -181,-182]) # jusqu'à 6 = densité, apres T°
-    print(reac.density_change_rate(state))
-    print(reac)
