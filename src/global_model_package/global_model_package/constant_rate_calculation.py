@@ -44,6 +44,20 @@ class ReactionRateConstant(object):
 
     @classmethod
     def from_concatenated_txt_file(cls, species: Species, file_path: str | Path, reaction_name) -> list[Self]:
+        """
+        Reads the cross-sections concatenated in a file downloaded from lxcat. It return a list of instances of ReactionRateConstant each with the right energy/cross sections lists.
+
+        Parameters
+        ----------
+        file_path : str | Path
+            Path to the .txt file containing the concatenated cross-sections
+        reaction_name: str
+            Name of reaction as found on the first line of each reaction block, eg 'EXCITATION', 'IONISATION'...
+        
+        Returns
+        ----------
+        list[ReactionRateConstant]
+        """
         energy_cs_df_list, energy_threshold_list = cls.parse_concatenated_cross_sections_file(file_path, reaction_name)
         
         return [cls(species, energy_cs_df["Energy"], energy_cs_df["Cross-section"], energy_threshold) for energy_cs_df, energy_threshold in zip(energy_cs_df_list, energy_threshold_list)]
