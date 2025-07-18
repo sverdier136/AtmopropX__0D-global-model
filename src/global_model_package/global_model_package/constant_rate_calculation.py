@@ -22,17 +22,32 @@ from .specie import Specie, Species
 
 class ReactionRateConstant(object):
 
-    def __init__(self, species: Species, energy_cross_sections_df: pd.DataFrame) -> None:
-        self.energy_treshold: float = 0.0
-        pass
-
-    @classmethod
-    def from_concatenated_txt_file(cls, species: Species, file_path: str | Path) -> list[Self]:
-        df = pd.DataFrame()
-        return [cls(species, df)]
+    def __init__(self, species: Species, energy_list: list[float]|NDArray[np.float64]|pd.Series, cross_section_list: list[float]|NDArray[np.float64]|pd.Series, energy_threshold: float|None = None) -> None:
+        self.species: Species = species
+        self.energy_treshold: float|None = energy_threshold
+        self.energy_list: NDArray[np.float64] = np.array(energy_list)
+        self.cross_section_list: NDArray[np.float64] = np.array(cross_section_list)
     
     def __call__(self, state: NDArray[np.float64]) -> float:
-        return 0.
+        """Calculates the reaction rate constant for a given state, which must be a NDArray[np.float]"""
+        #T = T_e * k / e
+        T_e = state[self.species.nb]
+        # If the table of energy - cross sections doesn't go to high enough temperatures, it is extended by considering that for higher temperatures the cross section stay the same
+        if 10 * e * T_e > np.max(self.energy_list):
+            self.energy_list = np.append(self.energy_list, np.logspace(np.max(self.energy_list), 10 * e * T_e, 100))
+            self.cross_section_list = np.append(self.cross_section_list, [self.cross_section_list[-1]]*100)
+        v = np.sqrt(2 * self.energy_list * e / m_e)  # electrons speed
+        a = (m_e / (2 * np.pi * e * T_e))**(3/2) * 4 * np.pi
+        f = self.cross_section_list * v**3 * np.exp(- m_e * v**2 / (2 * e * T_e)) 
+        k_rate: float = trapezoid(a*f, x=v)
+        return k_rate
+
+    @classmethod
+    def from_concatenated_txt_file(cls, species: Species, file_path: str | Path, reaction_name) -> list[Self]:
+        energy_cs_df_list, energy_threshold_list = cls.parse_concatenated_cross_sections_file(file_path, reaction_name)
+        
+        return [cls(species, energy_cs_df["Energy"], energy_cs_df["Cross-section"], energy_threshold) for energy_cs_df, energy_threshold in zip(energy_cs_df_list, energy_threshold_list)]
+    
     
     @staticmethod
     def parse_concatenated_cross_sections_file(file_path: str | Path, reaction_name: str) -> tuple[list[pd.DataFrame], list[float]]:
@@ -49,7 +64,7 @@ class ReactionRateConstant(object):
         Returns
         ----------
         (energy_cross_section_list, energy_threshold_list): tuple[list[pd.DataFrame], list[float]]
-            First element of tuple is a list of DataFrame with first column "Energy" and second "Cross-sections".
+            First element of tuple is a list of DataFrame with first column "Energy" and second "Cross-section".
             Second element is the list of energy thresholds.
         """
         energy_cs_df = []
@@ -162,7 +177,7 @@ def get_K_func(species,specie:str,reaction:str):
 
 if __name__ == "__main__":
     # #species_list = Species([Specie("e", 9.1e-31, 0),Specie("Xe0", 10.57e-27, 0), Specie("Xe+", 10.57e-27, 0)])
-    # species_list = Species([Specie("e", 9.1e-31, -e, 0, 3/2), Specie("Xe", 2.18e-25, 0, 1, 3/2), Specie("Xe+", 2.18e-25, e, 1, 3/2)])
+    species_list = Species([Specie("e", 9.1e-31, -e, 0, 3/2), Specie("Xe", 2.18e-25, 0, 1, 3/2), Specie("Xe+", 2.18e-25, e, 1, 3/2)])
     # state = np.array([10^18,3*10^19,3*10^19,3,0.03])
     # T_e = state[3]
     # #print(state[species_list.nb])
@@ -230,11 +245,12 @@ if __name__ == "__main__":
     # # print("K_iz="+str(K_iz))
     # # print("K_exc="+str(K_exc))
     print("starting")
-    df_list, e_list = ReactionRateConstant.parse_concatenated_cross_sections_file("D:/Users/Charlelie/Downloads/Cross section.txt", "EXCITATION")
+    constant_rates = ReactionRateConstant.from_concatenated_txt_file(species_list, "D:/Users/Charlelie/Downloads/Cross section.txt", "EXCITATION")
     print("hello")
-    df = df_list[0]
-    print(df.head(10))
-    print(len(df_list))
-    print(len(e_list))
-    print(e_list)
-    print([len(d)+100*e for d, e in zip(df_list, e_list)])
+    print(constant_rates[0]([10, 20, 30, 3]))
+    # df = df_list[0]
+    # print(df.head(10))
+    # print(len(df_list))
+    # print(len(e_list))
+    # print(e_list)
+    # print([len(d)+100*e for d, e in zip(df_list, e_list)])
