@@ -1,6 +1,8 @@
 from .reaction import Reaction
 
 from .excitation_reaction import Excitation
+from .vibrational_excitation_reaction import VibrationalExcitation
+from .rotational_excitation import RotationalExcitation
 from .ionisation_reaction import Ionisation
 from .dissociation_reaction import Dissociation
 
@@ -18,8 +20,11 @@ from .electron_heating_by_coil_reaction import ElectronHeating, ElectronHeatingC
 __all__ = [
     'Reaction',
     'Excitation',
+    'VibrationalExcitation',
+    'RotationalExcitation',
     'Ionisation',
     'Dissociation',
+
     'ThermicDiffusion',
     'InelasticCollision',
     'GeneralElasticCollision',

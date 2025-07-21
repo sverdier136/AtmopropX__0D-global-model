@@ -21,8 +21,20 @@ from .specie import Specie, Species
 
 
 class ReactionRateConstant(object):
+    """
+    ReactionRateConstant : 
+    ------
+    Class representing the reaction rate constant for a single reaction. __init__ takes as inputs Species, energy_list and cross_section_list but prefer using the utils class methods like from_concatenated_txt_file
+    """
 
-    def __init__(self, species: Species, energy_list: list[float]|NDArray[np.float64]|pd.Series, cross_section_list: list[float]|NDArray[np.float64]|pd.Series, energy_threshold: float|None = None) -> None:
+    CROSS_SECTIONS_PATH: str|None = None
+
+    def __init__(self, species: Species, energy_list: list[float]|NDArray[np.float64]|pd.Series, cross_section_list: list[float]|NDArray[np.float64]|pd.Series, energy_threshold: float|None = None):
+        """
+        ReactionRateConstant : 
+        ------
+        Class representing the reaction rate constant for a single reaction. __init__ takes as inputs Species, energy_list and cross_section_list but prefer using the utils class methods like from_concatenated_txt_file
+        """
         self.species: Species = species
         self.energy_treshold: float|None = energy_threshold
         self.energy_list: NDArray[np.float64] = np.array(energy_list)
@@ -43,28 +55,36 @@ class ReactionRateConstant(object):
         return k_rate
 
     @classmethod
-    def from_concatenated_txt_file(cls, species: Species, file_path: str | Path, reaction_name) -> list[Self]:
+    def from_concatenated_txt_file(cls, species: Species, file_path: str | Path, reaction_name, has_energy_threshold: bool = False) -> list[Self]:
         """
         Reads the cross-sections concatenated in a file downloaded from lxcat. It return a list of instances of ReactionRateConstant each with the right energy/cross sections lists.
 
         Parameters
         ----------
+        species : Species
+        Instance of Species used in simulation
         file_path : str | Path
             Path to the .txt file containing the concatenated cross-sections
         reaction_name: str
             Name of reaction as found on the first line of each reaction block, eg 'EXCITATION', 'IONISATION'...
+        has_energy_threshold : bool
+            Wether the file contains the energy threshold (on line reaction_name + 8)
         
         Returns
         ----------
         list[ReactionRateConstant]
         """
-        energy_cs_df_list, energy_threshold_list = cls.parse_concatenated_cross_sections_file(file_path, reaction_name)
-        
-        return [cls(species, energy_cs_df["Energy"], energy_cs_df["Cross-section"], energy_threshold) for energy_cs_df, energy_threshold in zip(energy_cs_df_list, energy_threshold_list)]
-    
+        assert ReactionRateConstant.CROSS_SECTIONS_PATH is not None, "ReactionRateConstant.CROSS_SECTIONS_PATH must be set before calling from_concatenated_txt_file."
+        file_path = os.path.join(ReactionRateConstant.CROSS_SECTIONS_PATH, file_path)
+        if has_energy_threshold:
+            energy_cs_df_list, energy_threshold_list = cls.parse_concatenated_cross_sections_file(file_path, reaction_name)
+            return [cls(species, energy_cs_df["Energy"], energy_cs_df["Cross-section"], energy_threshold) for energy_cs_df, energy_threshold in zip(energy_cs_df_list, energy_threshold_list)] # type: ignore
+        else:
+            energy_cs_df_list = cls.parse_concatenated_cross_sections_file(file_path, reaction_name)
+            return [cls(species, energy_cs_df["Energy"], energy_cs_df["Cross-section"]) for energy_cs_df in energy_cs_df_list] # type: ignore
     
     @staticmethod
-    def parse_concatenated_cross_sections_file(file_path: str | Path, reaction_name: str) -> tuple[list[pd.DataFrame], list[float]]:
+    def parse_concatenated_cross_sections_file(file_path: str | Path, reaction_name: str, has_energy_threshold: bool = False) -> tuple[list[pd.DataFrame], list[float]] | list[pd.DataFrame]:
         """
         Reads the cross-sections concatenated in a file downloaded from lxcat. 
 
@@ -81,6 +101,7 @@ class ReactionRateConstant(object):
             First element of tuple is a list of DataFrame with first column "Energy" and second "Cross-section".
             Second element is the list of energy thresholds.
         """
+        print("Starting to parse txt file : ", str(file_path))
         energy_cs_df = []
         energy_thresholds = []
 
@@ -90,31 +111,39 @@ class ReactionRateConstant(object):
         i = 0
         while i < len(lines):
             line = lines[i].strip()
+            if re.match(r"^\s*\*{5,}", line):
+                break
+            i +=1
 
+        while i < len(lines):
+            line = lines[i].strip()
             # Detect reaction block start
             if reaction_name in line:
-                reaction_type = line
-                energy_line = lines[i + 2].strip()
-                try:
-                    energy_value = float(energy_line)
-                except ValueError:
-                    raise ValueError(f"The energy threshold can't be converted to a float. Here is the line : \"{repr(lines[i+2])}\".")
-
+                if has_energy_threshold:
+                    energy_line = lines[i + 2].strip()
+                    try:
+                        energy_value = float(re.search(r"(\d+\.\d+(?:e[+-]\d{1,2})?)", energy_line).group(1)) # type: ignore
+                    except (ValueError, AttributeError):
+                        raise ValueError(f"The energy threshold can't be converted to a float. Here is the line : \"{repr(lines[i+2])}\".")
+                i+=3
                 # Find start of data table
-                assert re.match(r"^\s*-{5,}", lines[i+8]), (f"Text file doesn't seem to have expected format, when looking for -----. You're line looks like : \"{repr(lines[i+8])}\". It should look like the following : \n"
-                                                            "EXCITATION\n"
-                                                            "N2(X,v=0) -> N2(X,v=0)\n"
-                                                            "0.000000e+0\n"
-                                                            "SPECIES: e / N2(X,v=0)\n"
-                                                            "PROCESS: E + N2(X,v=0) -> E + N2(X,v=0), Excitation\n"
-                                                            "PARAM.:  E = 0 eV\n"
-                                                            "UPDATED: 2022-06-16 11:16:45\n"
-                                                            "COLUMNS: Energy (eV) | Cross section (m2)\n"
-                                                            "-----------------------------\n"
-                                                            "1.000000e-2	3.689100e-21\n"
-                                                            "2.000000e-2	3.721100e-21\n"
-                                                            "3.000000e-2	3.753600e-21")
-                i += 9  # skip past dashed line
+                while i<len(lines) and not re.match(r"^\s*-{5,}", lines[i]):
+                    i+=1
+                i+=1
+                # assert re.match(r"^\s*-{5,}", lines[i+8]), (f"Text file doesn't seem to have expected format, when looking for -----. You're line looks like : \"{repr(lines[i+8])}\". It should look like the following : \n"
+                #                                             "EXCITATION\n"
+                #                                             "N2(X,v=0) -> N2(X,v=0)\n"
+                #                                             "0.000000e+0\n"
+                #                                             "SPECIES: e / N2(X,v=0)\n"
+                #                                             "PROCESS: E + N2(X,v=0) -> E + N2(X,v=0), Excitation\n"
+                #                                             "PARAM.:  E = 0 eV\n"
+                #                                             "UPDATED: 2022-06-16 11:16:45\n"
+                #                                             "COLUMNS: Energy (eV) | Cross section (m2)\n"
+                #                                             "-----------------------------\n"
+                #                                             "1.000000e-2	3.689100e-21\n"
+                #                                             "2.000000e-2	3.721100e-21\n"
+                #                                             "3.000000e-2	3.753600e-21")
+                # i += 9  # skip past dashed line
 
                 # Read the data table
                 data = []
@@ -128,7 +157,8 @@ class ReactionRateConstant(object):
                     i += 1
 
                 energy_cs_df.append(pd.DataFrame(data, columns=["Energy", "Cross-section"]))
-                energy_thresholds.append(energy_value)
+                if has_energy_threshold:
+                    energy_thresholds.append(energy_value)
 
                 # # Prepare filename
                 # clean_name = re.sub(r"[^\w\-_\. ]", "_", reaction_name.replace("->", "to"))
@@ -146,7 +176,11 @@ class ReactionRateConstant(object):
 
             i += 1  # move to next line
         assert re.match(r"x+",lines[i-1]), f"File not ending with \"xxxx...x\". Ending with : \"{repr(lines[i-1])}\""
-        return energy_cs_df, energy_thresholds
+        if len(energy_cs_df)==0:
+            raise IOError("No cross section table found in this file. Please check its formatting.")
+        if has_energy_threshold:
+            return energy_cs_df, energy_thresholds
+        return energy_cs_df
 
 
 

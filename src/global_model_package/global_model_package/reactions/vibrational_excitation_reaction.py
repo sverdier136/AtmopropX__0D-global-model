@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from typing import override, Self
 import numpy as np
 from numpy.typing import NDArray
@@ -75,11 +77,37 @@ class VibrationalExcitation(Reaction):
         self.var_tracker.add_value_to_variable("E_e-_"+self.name, energy_change)
         return rate
 
+    # @classmethod
+    # def from_reaction_constant_rates(cls,species:Species, molecule_name:str, reaction_constant_rates: list[ReactionRateConstant], chamber:Chamber ) -> list[Self]:
+    #     return [cls(species, molecule_name, rate_constant, rate_constant.energy_treshold, chamber) for rate_constant in reaction_constant_rates]
+
     @classmethod
-    def from_reaction_constant_rates(cls,species:Species, molecule_name:str, reaction_constant_rates: list[ReactionRateConstant], chamber:Chamber ) -> list[Self]:
-        return [cls(species, molecule_name, rate_constant, rate_constant.energy_treshold, chamber) for rate_constant in reaction_constant_rates]
+    def from_concatenated_txt_file(cls, species: Species, molecule_name, file_name: str, reaction_name, chamber) -> list[Self]:
+        """
+        Reads the cross-sections concatenated in a file downloaded from lxcat. It return a list of instances of ReactionRateConstant each with the right energy/cross sections lists.
 
-
+        Parameters
+        ----------
+        file_name : str
+            Name of the .txt file containing the concatenated cross-sections. Should not include the .txt extension.
+        reaction_name: str
+            Name of reaction as found on the first line of each reaction block, eg 'EXCITATION', 'IONISATION'...
+        
+        Returns
+        ----------
+        list[ReactionRateConstant]
+        """
+        assert ReactionRateConstant.CROSS_SECTIONS_PATH is not None, "ReactionRateConstant.CROSS_SECTIONS_PATH must be set before calling from_concatenated_txt_file."
+        file_path = os.path.join(ReactionRateConstant.CROSS_SECTIONS_PATH, molecule_name, file_name+".txt")
+        energy_cs_df_list, energy_threshold_list = ReactionRateConstant.parse_concatenated_cross_sections_file(file_path, reaction_name, has_energy_threshold=True)
+        return [cls(
+                    species, 
+                    molecule_name, 
+                    ReactionRateConstant(species, energy_cs_df["Energy"], energy_cs_df["Cross-section"], energy_threshold),  # type: ignore
+                    energy_threshold,  # type: ignore
+                    chamber
+                ) for energy_cs_df, energy_threshold in zip(energy_cs_df_list, energy_threshold_list)]
+    
 
 
 

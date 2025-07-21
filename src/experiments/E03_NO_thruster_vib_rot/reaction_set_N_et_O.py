@@ -3,13 +3,16 @@ from scipy.constants import pi, e, k as k_B, epsilon_0 as eps_0, c, m_e
 # import numpy as np
 
 from global_model_package.reactions import (Excitation, Ionisation, Dissociation, 
-    ThermicDiffusion, InelasticCollision, ElasticCollisionWithElectron, 
-    FluxToWallsAndThroughGrids, GasInjection,
-    ElectronHeatingConstantRFPower
-)
+                VibrationalExcitation, RotationalExcitation,
+                ThermicDiffusion, InelasticCollision, ElasticCollisionWithElectron, 
+                FluxToWallsAndThroughGrids, GasInjection,
+                ElectronHeatingConstantRFPower
+            )
 
 from global_model_package.specie import Species, Specie
-from global_model_package.constant_rate_calculation import get_K_func
+from global_model_package.constant_rate_calculation import get_K_func, ReactionRateConstant
+
+ReactionRateConstant.CROSS_SECTIONS_PATH = "../../../cross_sections"
 
 def get_species_and_reactions(chamber):
     
@@ -88,6 +91,19 @@ def get_species_and_reactions(chamber):
     ela_N2 = ElasticCollisionWithElectron(species, "N2", get_K_func(species, "N2", "ela_N2"), chamber)
 
 
+#  █ █ █ ██▄ █▀▄ ▄▀▄ ▀█▀ █ ▄▀▄ █▄ █ ▄▀▄ █     ██▀ ▀▄▀ ▄▀▀ █ ▀█▀ ▄▀▄ ▀█▀ █ ▄▀▄ █▄ █
+#  ▀▄▀ █ █▄█ █▀▄ █▀█  █  █ ▀▄▀ █ ▀█ █▀█ █▄▄   █▄▄ █ █ ▀▄▄ █  █  █▀█  █  █ ▀▄▀ █ ▀█
+    vib_exc_N2_list = VibrationalExcitation.from_concatenated_txt_file(species, "N2", "vib_exc", "EXCITATION", chamber)
+    vib_exc_O2_list = VibrationalExcitation.from_concatenated_txt_file(species, "O2", "vib_exc", "EXCITATION", chamber)
+
+
+#  █▀▄ ▄▀▄ ▀█▀ ▄▀▄ ▀█▀ █ ▄▀▄ █▄ █ ▄▀▄ █     ██▀ ▀▄▀ ▄▀▀ █ ▀█▀ ▄▀▄ ▀█▀ █ ▄▀▄ █▄ █
+#  █▀▄ ▀▄▀  █  █▀█  █  █ ▀▄▀ █ ▀█ █▀█ █▄▄   █▄▄ █ █ ▀▄▄ █  █  █▀█  █  █ ▀▄▀ █ ▀█
+    rot_exc_N2_list = RotationalExcitation.from_concatenated_txt_file(species, "N2", "rot_exc", "ROTATIONAL", chamber)
+    rot_exc_O2_list = RotationalExcitation.from_concatenated_txt_file(species, "O2", "rot_exc", "ROTATIONAL", chamber)
+
+
+
 #  █▀ █   █ █ ▀▄▀ ██▀ ▄▀▀   ▀█▀ ▄▀▄   ▀█▀ █▄█ ██▀   █   █ ▄▀▄ █   █   ▄▀▀   ▄▀▄ █▄ █ █▀▄   ▀█▀ █▄█ █▀▄ ▄▀▄ █ █ ▄▀  █▄█   ▀█▀ █▄█ ██▀   ▄▀  █▀▄ █ █▀▄ ▄▀▀
 #  █▀ █▄▄ ▀▄█ █ █ █▄▄ ▄██    █  ▀▄▀    █  █ █ █▄▄   ▀▄▀▄▀ █▀█ █▄▄ █▄▄ ▄██   █▀█ █ ▀█ █▄▀    █  █ █ █▀▄ ▀▄▀ ▀▄█ ▀▄█ █ █    █  █ █ █▄▄   ▀▄█ █▀▄ █ █▄▀ ▄██
     out_flux = FluxToWallsAndThroughGrids(species, chamber)
@@ -123,6 +139,7 @@ def get_species_and_reactions(chamber):
         exc1_N2, exc2_N2, exc3_N2, exc4_N2, exc5_N2, exc6_N2, exc7_N2, exc8_N2, exc9_N2, exc11_N2, exc12_N2, exc13_N2, exc14_N2, 
         exc1_N, exc2_N, exc1_O2, exc2_O2, exc3_O2, exc4_O2, 
         exc1_O, exc2_O, exc3_O, exc4_O, exc5_O, exc6_O, exc7_O, exc8_O, exc9_O,
+        *vib_exc_N2_list, *vib_exc_O2_list, *rot_exc_N2_list, *rot_exc_O2_list,   # * is used to unpack lists (similar to *args in functions)
         ela_N, ela_N2, ela_O, ela_O2, 
         ion_N, ion_O2, ion_N2,
         diss1_O2, diss2_O2, diss_N2,

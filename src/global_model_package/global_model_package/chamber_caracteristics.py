@@ -15,7 +15,7 @@ class Chamber(object):
         self.L      = config_dict["L"]
         self.V_chamber = pi * self.R**2 * self.L
         #self.V_chamber=0.5
-        self.s      = config_dict["s"]
+        #self.s      = config_dict["s"]
         self.S_grid = pi * self.R**2
         self.S_walls = pi * self.R * self.L
         self.S_total = 2 * self.S_grid + self.S_walls
