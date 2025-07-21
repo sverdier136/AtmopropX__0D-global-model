@@ -1,4 +1,4 @@
-from typing import override
+from typing import override, Callable
 import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
@@ -20,7 +20,7 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
 
     instance_counter = {}
 
-    def __init__(self, species: Species, colliding_specie: str, rate_constant, energy_treshold: float, chamber: Chamber):
+    def __init__(self, species: Species, colliding_specie: str, rate_constant: Callable[[NDArray[np.float64]], float], chamber: Chamber):
         """
         Elastic collision between molecule and electron
             Inputs : 
@@ -29,7 +29,7 @@ class ElasticCollisionWithElectron(GeneralElasticCollision):
                 rate_constant : function taking as argument state [n_e, n_N2, ..., n_N+, T_e, T_monoato, ..., T_diato]
                 energy_threshold : energy threshold of electron so that reaction occurs
         """
-        super().__init__(species, [species.names[0], colliding_specie], [species.names[0], colliding_specie], rate_constant, energy_treshold, chamber)
+        super().__init__(species, [species.names[0], colliding_specie], [species.names[0], colliding_specie], chamber)
         self.rate_constant = rate_constant
 
         name = f"{colliding_specie}"

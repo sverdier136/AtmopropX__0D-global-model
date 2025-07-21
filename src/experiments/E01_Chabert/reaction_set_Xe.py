@@ -40,7 +40,7 @@ def get_species_and_reactions(chamber):
     #lambda T: Kiz(T)
 
     ### Elastic Collision : OK
-    ela_elec_Xe = ElasticCollisionWithElectron(species, "Xe", get_K_func(species, "Xe", "Elastic_Xe"), 0, chamber) 
+    ela_elec_Xe = ElasticCollisionWithElectron(species, "Xe", get_K_func(species, "Xe", "Elastic_Xe"), chamber) 
     # get_K_func(species, "Xe", "ela_elec_Xe")
     #lambda T : 1e-13
 

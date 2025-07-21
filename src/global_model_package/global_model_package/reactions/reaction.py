@@ -1,4 +1,7 @@
-from typing import Self
+import os
+from pathlib import Path
+from typing import Self, Callable
+import abc # abstract classes
 import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
@@ -6,6 +9,7 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 from global_model_package.specie import Specie, Species
 from global_model_package.chamber_caracteristics import Chamber
 from global_model_package.variable_tracker import VariableTracker
+from global_model_package.constant_rate_calculation import ReactionRateConstant
 
 # * Ok ! Vérifié par Liam
 # ! Recheck pour chamber
