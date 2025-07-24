@@ -19,9 +19,8 @@ from config import config_dict
 from reaction_set_N import get_species_and_reactions
 
 
-
 chamber = Chamber(config_dict)
-species, initial_state, reactions_list, electron_heating = get_species_and_reactions(chamber)
+species, initial_state, reactions_list, electron_heating, modifier_func = get_species_and_reactions(chamber)
 log_folder_path = Path(__file__).resolve().parent.parent.parent.parent.joinpath("logs")
 model = GlobalModel(species, reactions_list, chamber, electron_heating, simulation_name="N2_Kim", log_folder_path=log_folder_path)
 
@@ -37,7 +36,7 @@ model = GlobalModel(species, reactions_list, chamber, electron_heating, simulati
 # Solve the model
 try:
     print("Solving model...")
-    sol = model.solve(0, 1, initial_state)  # TODO Needs some testing
+    sol = model.solve(0, 1, initial_state, (modifier_func, None))  # TODO Needs some testing
     print("Model resolved !")
 except Exception as exception:
     print("Entering exception...")
@@ -45,6 +44,7 @@ except Exception as exception:
     print("Variables saved")
     raise exception
 final_states = sol.y
+print(sol.y[:, -1])
 
 # Extract time points
 time_points = sol.t

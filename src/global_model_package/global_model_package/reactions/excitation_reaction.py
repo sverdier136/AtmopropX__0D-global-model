@@ -1,4 +1,5 @@
-from typing import override
+import os
+from typing import override, Self
 import numpy as np
 from numpy.typing import NDArray
 from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k is k_B -> Boltzmann constant
@@ -6,6 +7,7 @@ from scipy.constants import m_e, e, pi, k as k_B, epsilon_0 as eps_0, mu_0   # k
 from global_model_package.specie import Specie, Species
 from .reaction import Reaction
 from global_model_package.chamber_caracteristics import Chamber
+from global_model_package.constant_rate_calculation import ReactionRateConstant
 
 
 # * Checked by me
@@ -74,7 +76,33 @@ class Excitation(Reaction):
 
 
 
+    @classmethod
+    def from_concatenated_txt_file(cls, species: Species, molecule_name, file_name: str, reaction_name, chamber) -> list[Self]:
+        """
+        Reads the cross-sections concatenated in a file downloaded from lxcat. It return a list of instances of Excitation each with the right energy/cross sections lists.
 
+        Parameters
+        ----------
+        file_name : str
+            Name of the .txt file containing the concatenated cross-sections. Should not include the .txt extension.
+        reaction_name: str
+            Name of reaction as found on the first line of each reaction block, eg 'EXCITATION', 'IONISATION'...
+        
+        Returns
+        ----------
+        list[ReactionRateConstant]
+        """
+        assert ReactionRateConstant.CROSS_SECTIONS_PATH is not None, "ReactionRateConstant.CROSS_SECTIONS_PATH must be set before calling from_concatenated_txt_file."
+        file_path = os.path.join(ReactionRateConstant.CROSS_SECTIONS_PATH, molecule_name, file_name+".txt")
+        energy_cs_df_list, energy_threshold_list = ReactionRateConstant.parse_concatenated_cross_sections_file(file_path, reaction_name, has_energy_threshold=True)
+        return [cls(
+                    species, 
+                    molecule_name, 
+                    ReactionRateConstant(species, energy_cs_df["Energy"], energy_cs_df["Cross-section"], energy_threshold),  # type: ignore
+                    energy_threshold,  # type: ignore
+                    chamber
+                ) for energy_cs_df, energy_threshold in zip(energy_cs_df_list, energy_threshold_list)]
+    
 
 
 
